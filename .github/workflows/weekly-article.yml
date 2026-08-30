@@ -1,0 +1,38 @@
+name: Article hebdomadaire BugLog
+
+on:
+  schedule:
+    # Tous les lundis à 8h00 UTC. Modifie cette ligne pour changer le jour/l'heure.
+    - cron: '0 8 * * 1'
+  workflow_dispatch: {} # permet de le lancer manuellement depuis l'onglet "Actions" pour tester
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Générer et publier le nouvel article
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/generate-article.mjs
+
+      - name: Régénérer le sitemap.xml (fiches + articles à jour)
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: node scripts/generate-sitemap.mjs
+
+      - name: Déployer le sitemap mis à jour sur Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: buglog-d884a
