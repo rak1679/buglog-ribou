@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog BugLog — Comprendre les pannes informatiques avant de réparer</title>
+<meta name="description" id="metaDescription" content="Articles de fond sur les pannes récurrentes : écrans bleus, surchauffe, disques durs défaillants, cartes graphiques. Pourquoi ça arrive et comment l'éviter.">
+<meta name="keywords" content="blog informatique, réparation pc, panne ordinateur, écran bleu windows, surchauffe pc, disque dur en panne">
+<meta name="author" content="BugLog">
+<meta name="robots" content="index, follow">
+<link rel="canonical" id="canonicalLink" href="https://buglog-d884a.web.app/blog.html">
+<link rel="alternate" hreflang="fr" href="https://buglog-d884a.web.app/blog.html">
+<link rel="alternate" hreflang="x-default" href="https://buglog-d884a.web.app/blog.html">
+
+<!-- Open Graph / réseaux sociaux -->
+<meta property="og:type" content="blog">
+<meta property="og:site_name" content="BugLog">
+<meta property="og:title" id="ogTitle" content="Blog BugLog — Comprendre les pannes informatiques">
+<meta property="og:description" id="ogDescription" content="Articles de fond sur les pannes récurrentes : pourquoi ça arrive, comment le diagnostiquer, et comment l'éviter.">
+<meta property="og:url" id="ogUrl" content="https://buglog-d884a.web.app/blog.html">
+<meta property="og:image" content="https://buglog-d884a.web.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:locale:alternate" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="twTitle" content="Blog BugLog — Comprendre les pannes informatiques">
+<meta name="twitter:description" id="twDescription" content="Articles de fond sur les pannes récurrentes et comment les éviter.">
+<meta name="twitter:image" content="https://buglog-d884a.web.app/og-image.png">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230a0f1c'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%234fd1c5' font-family='monospace'%3E%3C/%3E%3C/text%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Blog BugLog",
+  "url": "https://buglog-d884a.web.app/blog.html",
+  "description": "Articles de fond sur les pannes informatiques récurrentes et comment les éviter.",
+  "inLanguage": "fr",
+  "blogPost": [
+    {"@type":"BlogPosting","headline":"Pourquoi Windows plante avec un écran bleu (et ce que le code vous dit vraiment)","datePublished":"2026-06-02","url":"https://buglog-d884a.web.app/blog.html?article=pourquoi-ecran-bleu"},
+    {"@type":"BlogPosting","headline":"Votre PC s'éteint tout seul sous charge ? Voici comment traquer la surchauffe","datePublished":"2026-05-14","url":"https://buglog-d884a.web.app/blog.html?article=surchauffe-pc"},
+    {"@type":"BlogPosting","headline":"Les 4 signes qu'un disque dur est en train de mourir (et comment réagir à temps)","datePublished":"2026-04-22","url":"https://buglog-d884a.web.app/blog.html?article=disque-dur-signes"},
+    {"@type":"BlogPosting","headline":"Code 43 : pourquoi Windows voit votre carte graphique sans pouvoir l'utiliser","datePublished":"2026-03-30","url":"https://buglog-d884a.web.app/blog.html?article=code-43-gpu"},
+    {"@type":"BlogPosting","headline":"Wi-Fi connecté mais « pas d'accès à Internet » : comprendre où ça bloque","datePublished":"2026-07-10","url":"https://buglog-d884a.web.app/blog.html?article=wifi-connecte-sans-internet"},
+    {"@type":"BlogPosting","headline":"Autonomie qui s'effondre : ce que l'usure d'une batterie de portable veut vraiment dire","datePublished":"2026-07-28","url":"https://buglog-d884a.web.app/blog.html?article=batterie-portable-usure"}
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #0a0f1c;
+  --bg-panel: #101a2e;
+  --line: #223050;
+  --text: #d7e2f2;
+  --text-dim: #7b8bab;
+  --accent: #4fd1c5;
+  --accent-dim: #2b6b66;
+  --danger: #ff6b4a;
+  --warn: #f2b84b;
+  --ok: #63d47a;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);}
+::selection{background:var(--accent);color:#04201d;}
+a{color:inherit;}
+
+/* ---------- NAV ---------- */
+nav{
+  max-width:900px;margin:0 auto;padding:22px 24px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:13px;flex-wrap:wrap;
+}
+nav .brand{font-weight:700;letter-spacing:-0.3px;}
+nav .brand span{color:var(--accent);}
+.nav-toggle{
+  display:none;background:none;border:1px solid var(--line);color:var(--text);
+  border-radius:6px;font-size:18px;padding:4px 10px;cursor:pointer;line-height:1.4;
+}
+@media(max-width:640px){
+  nav{font-size:12px;padding:16px 16px 0;}
+  .nav-toggle{display:inline-block;}
+  nav .links{
+    display:none;width:100%;flex-direction:column;align-items:stretch;gap:10px;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  }
+  nav .links.open{display:flex;}
+  nav .links a, nav .links button{width:100%;text-align:center;}
+}
+nav .links{display:flex;gap:22px;}
+nav .links a{text-decoration:none;color:var(--text-dim);padding-bottom:4px;border-bottom:2px solid transparent;transition:all .15s ease;}
+nav .links a:hover, nav .links a.active{color:var(--text);border-color:var(--accent);}
+.account-nav-btn{
+  font-family:var(--font-mono);font-size:11.5px;background:none;border:1px solid var(--line);
+  color:var(--text-dim);border-radius:999px;padding:5px 12px;cursor:pointer;
+}
+.account-nav-btn:hover{border-color:var(--accent-dim);color:var(--text);}
+.account-nav-btn.active{background:var(--accent);color:#04201d;border-color:var(--accent);font-weight:600;}
+
+/* ---------- ACCOUNT MODAL ---------- */
+.account-explainer{
+  font-size:13px;line-height:1.6;color:var(--text-dim);margin:0 0 18px;
+}
+.account-explainer strong{color:var(--text);}
+.account-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--line);}
+.account-tab{
+  flex:1;background:none;border:none;color:var(--text-dim);font-family:var(--font-mono);font-size:12.5px;
+  padding:10px 0;cursor:pointer;border-bottom:2px solid transparent;
+}
+.account-tab.active{color:var(--accent);border-color:var(--accent);font-weight:600;}
+.account-guest{
+  display:flex;align-items:center;gap:10px;justify-content:center;margin-top:18px;
+  padding-top:16px;border-top:1px solid var(--line);font-family:var(--font-mono);font-size:12px;color:var(--text-dim);
+}
+.account-guest button{
+  background:none;border:1px solid var(--line);color:var(--text-dim);border-radius:999px;
+  padding:6px 14px;font-family:var(--font-mono);font-size:12px;cursor:pointer;
+}
+.account-guest button:hover{color:var(--accent);border-color:var(--accent-dim);}
+.forgot-link{
+  background:none;border:none;color:var(--text-dim);font-family:var(--font-mono);font-size:12px;
+  cursor:pointer;text-decoration:underline;padding:0 0 14px;text-align:left;
+}
+.forgot-link:hover{color:var(--accent);}
+
+/* ---------- HERO ---------- */
+.hero{
+  padding:36px 24px 40px;border-bottom:1px solid var(--line);
+  background:radial-gradient(circle at 15% 0%, rgba(79,209,197,0.08), transparent 45%), var(--bg);
+}
+h1.title{
+  max-width:760px;margin:0 auto 8px;font-family:var(--font-mono);
+  font-size:clamp(26px,4.5vw,40px);font-weight:700;letter-spacing:-0.5px;
+}
+h1.title .bracket{color:var(--accent);}
+p.subtitle{max-width:640px;margin:0 auto;color:var(--text-dim);font-size:15px;line-height:1.6;}
+
+/* ---------- ARTICLE GRID ---------- */
+main{max-width:900px;margin:0 auto;padding:40px 24px 80px;}
+.grid{display:grid;gap:16px;grid-template-columns:1fr;}
+@media(min-width:680px){.grid{grid-template-columns:1fr 1fr;}}
+
+.card{
+  border:1px solid var(--line);border-radius:10px;background:var(--bg-panel);
+  padding:20px;cursor:pointer;transition:border-color .15s ease, transform .15s ease;
+  display:flex;flex-direction:column;gap:10px;
+}
+.card:hover{border-color:var(--accent-dim);transform:translateY(-2px);}
+.card .meta{
+  font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+  display:flex;gap:10px;align-items:center;
+}
+.card .meta .tag{
+  text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border:1px solid var(--line);border-radius:4px;
+}
+.c-badge{
+  margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);
+  border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap;
+}
+.card h3{margin:0;font-size:17px;line-height:1.35;}
+.card p{margin:0;color:var(--text-dim);font-size:13.5px;line-height:1.55;}
+.card .read{
+  margin-top:auto;font-family:var(--font-mono);font-size:12px;color:var(--accent);
+}
+
+/* ---------- ARTICLE READER ---------- */
+.reader{display:none;}
+.reader.open{display:block;}
+.grid.hidden{display:none;}
+.back{
+  font-family:var(--font-mono);font-size:12.5px;color:var(--text-dim);
+  background:none;border:none;cursor:pointer;padding:0 0 20px;display:flex;gap:6px;align-items:center;
+}
+.back:hover{color:var(--accent);}
+.article-meta{
+  font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);
+  display:flex;gap:10px;margin-bottom:10px;
+}
+.article-meta .tag{text-transform:uppercase;padding:2px 8px;border:1px solid var(--line);border-radius:4px;}
+.article h2{font-size:clamp(24px,4vw,32px);margin:0 0 18px;line-height:1.25;}
+.article .body{font-size:15.5px;line-height:1.8;color:var(--text);}
+.article .body p{margin:0 0 16px;}
+.article .body h4{
+  font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--accent);margin:28px 0 10px;
+}
+.article .body code{
+  font-family:var(--font-mono);background:#0d1728;border:1px solid var(--line);
+  padding:2px 6px;border-radius:4px;font-size:13.5px;color:var(--ok);
+}
+.article .body ul{margin:0 0 16px;padding-left:20px;}
+.share-row{margin-top:8px;}
+.share-row button{
+  font-family:var(--font-mono);font-size:11.5px;background:none;border:1px solid var(--line);
+  color:var(--text-dim);border-radius:999px;padding:6px 14px;cursor:pointer;transition:all .15s ease;
+}
+.share-row button:hover{color:var(--ok);border-color:var(--ok);}
+.article .body li{margin-bottom:6px;}
+
+/* ---------- COMMENTS ---------- */
+.comments{border-top:1px solid var(--line);padding-top:24px;margin-top:36px;}
+.comments h4{
+  font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--accent);margin:0 0 14px;
+}
+.comments-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.c-empty{margin:0;color:var(--text-dim);font-size:13.5px;font-style:italic;}
+.comment-item{background:var(--bg-panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;}
+.comment-item.ai{border-color:var(--accent-dim);background:linear-gradient(180deg, rgba(79,209,197,0.06), var(--bg-panel) 40%);}
+.comment-item.ai .c-name{color:var(--accent);}
+.comment-item.thinking p{color:var(--text-dim);font-style:italic;}
+.comment-delete-btn{
+  margin-top:8px;font-family:var(--font-mono);font-size:11px;background:none;
+  border:1px solid var(--danger);color:var(--danger);border-radius:6px;
+  padding:4px 10px;cursor:pointer;
+}
+.comment-delete-btn:hover:not(:disabled){background:var(--danger);color:#2a0a02;}
+.comment-delete-btn:disabled{opacity:.6;cursor:default;}
+.comment-item .c-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.comment-item .c-name{font-family:var(--font-mono);font-size:12.5px;font-weight:600;color:var(--accent);}
+.comment-item .c-date{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);}
+.comment-item p{margin:0;font-size:14px;line-height:1.6;color:var(--text);}
+.comments-form{display:flex;flex-direction:column;gap:8px;max-width:520px;}
+.comments-form input, .comments-form textarea{
+  background:var(--bg-panel);border:1px solid var(--line);border-radius:6px;color:var(--text);
+  font-family:var(--font-sans);font-size:14px;padding:10px 13px;outline:none;resize:vertical;
+}
+.comments-form input:focus, .comments-form textarea:focus{border-color:var(--accent-dim);}
+.comments-form textarea{min-height:70px;}
+.comments-form button{
+  align-self:flex-end;font-family:var(--font-mono);font-size:12.5px;font-weight:600;
+  background:var(--accent);color:#04201d;border:none;border-radius:6px;padding:9px 18px;cursor:pointer;
+}
+.comments-form button:disabled{opacity:.6;cursor:default;}
+.comments-form button:hover:not(:disabled){background:#67e0d4;}
+
+footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--text-dim);font-family:var(--font-mono);font-size:12px;}
+.contact-bar{display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.contact-open-btn{
+  font-family:var(--font-mono);color:var(--text-dim);
+  border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-size:12px;
+  background:none;cursor:pointer;transition:all .15s ease;
+}
+.contact-open-btn:hover{color:var(--accent);border-color:var(--accent-dim);}
+
+/* ---------- MODAL ---------- */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(5,9,18,0.75);
+  z-index:100;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--bg-panel);border:1px solid var(--line);border-radius:12px;
+  max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:24px;
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.modal-head h3{margin:0;font-family:var(--font-mono);font-size:16px;}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--text-dim);margin-bottom:6px;
+}
+.field input, .field textarea{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--text);
+  font-family:var(--font-sans);font-size:14px;padding:9px 12px;outline:none;resize:vertical;
+}
+.field textarea{min-height:80px;}
+.field input:focus, .field textarea:focus{border-color:var(--accent-dim);}
+.modal-actions{display:flex;justify-content:flex-end;margin-top:6px;}
+.modal-actions button{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;
+  background:var(--accent);color:#04201d;border:none;border-radius:6px;padding:10px 22px;cursor:pointer;
+}
+.modal-actions button:disabled{opacity:.6;cursor:default;}
+.modal-actions button:hover:not(:disabled){background:#67e0d4;}
+
+.mod-item{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:var(--bg-panel);}
+.mod-item h5{margin:0 0 6px;font-size:14.5px;}
+.mod-item .mod-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:8px;}
+.mod-item p{margin:0;font-size:13.5px;line-height:1.5;color:var(--text);}
+.mod-empty{color:var(--text-dim);font-family:var(--font-mono);font-size:13px;font-style:italic;padding:8px 0 18px;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="brand">[Bug<span>Log</span>]</div>
+  <button id="navToggle" class="nav-toggle" aria-label="Menu">☰</button>
+  <div class="links" id="navRight">
+    <a href="index.html">Base de bugs</a>
+    <a href="blog.html" class="active">Blog</a>
+    <button id="accountBtn" class="account-nav-btn">Se connecter</button>
+    <button id="adminBtn" class="account-nav-btn">Connexion admin</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1 class="title"><span class="bracket">[</span>Blog<span class="bracket">]</span> — comprendre avant de réparer</h1>
+  <p class="subtitle">Des articles de fond sur les pannes récurrentes : pourquoi ça arrive, comment le diagnostiquer, et comment l'éviter la prochaine fois.</p>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+
+  <div class="reader" id="reader">
+    <button class="back" id="backBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Retour aux articles
+    </button>
+    <article class="article" id="articleContent"></article>
+    <div class="comments">
+      <h4>Discussion</h4>
+      <div class="comments-list">Chargement…</div>
+      <form class="comments-form">
+        <input type="text" class="c-name" placeholder="Votre prénom" maxlength="40" required>
+        <textarea class="c-text" placeholder="Votre avis, une expérience similaire, une question…" maxlength="500" required></textarea>
+        <button type="submit">Publier</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer>
+  BugLog — journal communautaire de pannes & correctifs · fait pour dépanner vite
+  <div class="contact-bar">
+    <button type="button" id="openContact" class="contact-open-btn">✉ Nous contacter</button>
+    <button type="button" id="openHistory" class="contact-open-btn">🕘 Mon historique</button>
+    <a href="mentions-legales.html" class="contact-open-btn" style="text-decoration:none;display:inline-flex;align-items:center;">📄 Mentions légales</a>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="contactModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Nous contacter</h3>
+      <button type="button" class="modal-close" id="closeContactModal">&times;</button>
+    </div>
+    <form id="contactForm">
+      <div class="field">
+        <label>Votre nom</label>
+        <input type="text" name="name" maxlength="60" required>
+      </div>
+      <div class="field">
+        <label>Email ou téléphone (pour vous répondre)</label>
+        <input type="text" name="contact" maxlength="120" required>
+      </div>
+      <div class="field">
+        <label>Message</label>
+        <textarea name="message" maxlength="800" required></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" id="contactSubmitBtn">Envoyer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-head">
+      <h3>Historique de mes commentaires</h3>
+      <button type="button" class="modal-close" id="closeHistoryModal">&times;</button>
+    </div>
+    <form id="historySearchForm" style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="historyNameInput" placeholder="Ton prénom (tel qu'utilisé dans tes commentaires)" style="flex:1;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--text);font-family:var(--font-sans);font-size:14px;padding:9px 12px;outline:none;">
+      <button type="submit" style="font-family:var(--font-mono);font-size:12.5px;font-weight:600;background:var(--accent);color:#04201d;border:none;border-radius:6px;padding:9px 16px;cursor:pointer;">Voir</button>
+    </form>
+    <div id="historyContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-head">
+      <h3 id="accountModalTitle">Se connecter</h3>
+      <button type="button" class="modal-close" id="closeAccountModal">&times;</button>
+    </div>
+
+    <p class="account-explainer">
+      Un compte te permet de retrouver facilement l'historique de tous tes commentaires, sans retaper ton nom à chaque fois. C'est <strong>optionnel</strong> — tu peux aussi commenter sans compte, en cliquant sur « Continuer en invité » en bas.
+    </p>
+
+    <div class="account-tabs">
+      <button type="button" class="account-tab active" data-tab="login">Se connecter</button>
+      <button type="button" class="account-tab" data-tab="register">Créer un compte</button>
+    </div>
+
+    <form id="loginAccountForm" class="account-panel">
+      <div class="field">
+        <label>Nom d'utilisateur</label>
+        <input type="text" name="username" maxlength="40" required>
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label>Code de l'application d'authentification</label>
+        <input type="text" name="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required placeholder="123456">
+      </div>
+      <button type="button" id="openForgotPassword" class="forgot-link">Mot de passe oublié ?</button>
+      <div class="modal-actions">
+        <button type="submit">Se connecter</button>
+      </div>
+    </form>
+
+    <form id="registerAccountForm" class="account-panel" style="display:none;">
+      <div id="registerStep1">
+        <div class="field">
+          <label>Nom d'utilisateur (visible dans tes commentaires)</label>
+          <input type="text" name="username" maxlength="40" required>
+        </div>
+        <div class="field">
+          <label>Adresse email</label>
+          <input type="email" name="email" maxlength="120" required>
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input type="password" name="password" autocomplete="new-password" minlength="4" required>
+        </div>
+        <div class="modal-actions">
+          <button type="submit">Continuer</button>
+        </div>
+      </div>
+      <div id="registerStep2" style="display:none;">
+        <p class="modal-note" style="display:block;">
+          Dernière étape : pour protéger ton compte, on ajoute une double vérification.
+          Ouvre une application comme <strong>Google Authenticator</strong>, <strong>Authy</strong> ou <strong>Microsoft Authenticator</strong> (gratuites), scanne ce QR code, puis recopie ici le code à 6 chiffres qu'elle affiche.
+        </p>
+        <div id="registerQr" style="display:flex;justify-content:center;background:#fff;padding:12px;border-radius:10px;margin-bottom:14px;"></div>
+        <div class="field">
+          <label>Code affiché dans l'application</label>
+          <input type="text" name="confirmOtp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="confirmRegisterBtn">Confirmer et créer mon compte</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="account-guest">
+      <span>ou</span>
+      <button type="button" id="continueAsGuest">Continuer en invité →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-head">
+      <h3>Connexion admin</h3>
+      <button type="button" class="modal-close" id="closeAdminLoginModal">&times;</button>
+    </div>
+    <form id="adminLoginForm">
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" name="pwd" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label>Code de l'application d'authentification</label>
+        <input type="text" name="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required placeholder="123456">
+      </div>
+      <div class="modal-actions">
+        <button type="submit">Se connecter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-head">
+      <h3>Mot de passe oublié</h3>
+      <button type="button" class="modal-close" id="closeForgotModal">&times;</button>
+    </div>
+
+    <div id="forgotStep1">
+      <p class="account-explainer">Entre ton nom d'utilisateur : un code de récupération sera envoyé à l'adresse email associée à ton compte.</p>
+      <form id="forgotRequestForm">
+        <div class="field">
+          <label>Nom d'utilisateur</label>
+          <input type="text" name="username" maxlength="40" required>
+        </div>
+        <div class="modal-actions">
+          <button type="submit">Envoyer le code</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="forgotStep2" style="display:none;">
+      <p class="account-explainer">Un code a été envoyé par email. Entre-le ci-dessous avec ton nouveau mot de passe.</p>
+      <form id="forgotResetForm">
+        <div class="field">
+          <label>Code reçu par email</label>
+          <input type="text" name="code" inputmode="numeric" maxlength="6" required placeholder="123456">
+        </div>
+        <div class="field">
+          <label>Nouveau mot de passe</label>
+          <input type="password" name="newPassword" autocomplete="new-password" minlength="4" required>
+        </div>
+        <div class="modal-actions">
+          <button type="submit">Réinitialiser le mot de passe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- STORAGE SHIM ----------
+   window.storage existe déjà et fonctionne automatiquement dans l'aperçu Claude.
+   Hors de Claude (site hébergé), on le remplace par une base Firebase gratuite.
+   ⚠️ À remplacer par la config de TON projet Firebase (voir instructions). */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAlvNheAnTMPxUnrRxYWyFxP6kSArNoh1k",
+  authDomain: "buglog-d884a.firebaseapp.com",
+  databaseURL: "https://buglog-d884a-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "buglog-d884a"
+};
+
+if(!window.storage){
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const _fbDb = firebase.database();
+  const _authReady = firebase.auth().signInAnonymously().catch(err=>{
+    console.error('Authentification Firebase anonyme échouée :', err);
+  });
+  function _fbKey(key){ return String(key).replace(/[.#$\[\]]/g, '_'); }
+  window.storage = {
+    async get(key, shared){
+      await _authReady;
+      const snap = await _fbDb.ref('buglog/' + _fbKey(key)).get();
+      if(!snap.exists()) throw new Error('Clé introuvable : ' + key);
+      return { key, value: snap.val(), shared: !!shared };
+    },
+    async set(key, value, shared){
+      await _authReady;
+      await _fbDb.ref('buglog/' + _fbKey(key)).set(value);
+      return { key, value, shared: !!shared };
+    },
+    async delete(key, shared){
+      await _authReady;
+      await _fbDb.ref('buglog/' + _fbKey(key)).remove();
+      return { key, deleted: true, shared: !!shared };
+    },
+    async list(prefix, shared){
+      await _authReady;
+      const snap = await _fbDb.ref('buglog').get();
+      const all = snap.exists() ? Object.keys(snap.val()) : [];
+      const keys = prefix ? all.filter(k => k.startsWith(_fbKey(prefix))) : all;
+      return { keys, prefix, shared: !!shared };
+    }
+  };
+}
+
+const articles = [
+  {
+    id: "pourquoi-ecran-bleu",
+    tag: "Windows",
+    date: "2026-06-02",
+    titre: "Pourquoi Windows plante avec un écran bleu (et ce que le code vous dit vraiment)",
+    resume: "L'écran bleu n'est pas une panne aléatoire : chaque code pointe vers une cause précise. Voici comment le lire.",
+    corps: `
+      <p>L'écran bleu de la mort (BSOD) a mauvaise réputation, mais c'est en réalité un mécanisme de protection : dès que le noyau Windows détecte une erreur qu'il ne peut pas gérer en toute sécurité, il arrête tout plutôt que de risquer de corrompre vos données.</p>
+      <h4>Ce que dit le code</h4>
+      <p>Le code affiché, comme <code>0x0000007B</code> ou <code>0x000000EF</code>, correspond à un type d'erreur précis dans le noyau. Il ne désigne pas toujours la même pièce défaillante, mais il réduit énormément le champ de recherche : un pilote, un périphérique de stockage, ou une incompatibilité mémoire.</p>
+      <h4>Les causes les plus fréquentes</h4>
+      <ul>
+        <li>Un pilote graphique ou réseau récemment mis à jour et mal supporté</li>
+        <li>Un changement de configuration du BIOS (mode SATA, par exemple)</li>
+        <li>De la mémoire RAM défectueuse ou mal insérée</li>
+        <li>Un disque système en fin de vie</li>
+      </ul>
+      <h4>Le réflexe à avoir</h4>
+      <p>Notez le code exact, cherchez-le dans la base de bugs de ce site, et vérifiez d'abord ce qui a changé récemment sur la machine : une mise à jour, un nouveau périphérique, ou une ouverture du boîtier.</p>
+    `
+  },
+  {
+    id: "surchauffe-pc",
+    tag: "Matériel",
+    date: "2026-05-14",
+    titre: "Votre PC s'éteint tout seul sous charge ? Voici comment traquer la surchauffe",
+    resume: "Un arrêt brutal pendant un jeu ou un rendu vidéo est presque toujours une protection thermique qui s'est déclenchée.",
+    corps: `
+      <p>Quand un processeur ou une carte graphique atteint sa température limite, le système coupe l'alimentation avant que le composant ne soit endommagé. C'est un arrêt volontaire, pas une panne électrique.</p>
+      <h4>Diagnostiquer avant d'agir</h4>
+      <p>Avant de démonter quoi que ce soit, installez un utilitaire de surveillance des températures et observez le comportement pendant une charge normale. Un pic soudain juste avant l'extinction confirme la piste thermique.</p>
+      <h4>Les coupables habituels</h4>
+      <ul>
+        <li>Poussière accumulée dans les radiateurs et ventilateurs</li>
+        <li>Pâte thermique séchée après plusieurs années</li>
+        <li>Un boîtier mal ventilé ou posé contre un mur</li>
+        <li>Un ventilateur qui a cessé de tourner</li>
+      </ul>
+      <h4>Ce qui ne suffit pas toujours</h4>
+      <p>Dépoussiérer aide, mais si la machine a plus de deux ou trois ans, la pâte thermique doit souvent être refaite : elle perd sa capacité à transférer la chaleur avec le temps, même sans poussière visible.</p>
+    `
+  },
+  {
+    id: "disque-dur-signes",
+    tag: "Matériel",
+    date: "2026-04-22",
+    titre: "Les 4 signes qu'un disque dur est en train de mourir (et comment réagir à temps)",
+    resume: "Un disque dur mécanique prévient rarement au dernier moment. Apprendre à repérer les signaux faibles évite de perdre des données.",
+    corps: `
+      <p>Contrairement à un SSD, un disque dur mécanique a des pièces en mouvement qui s'usent physiquement. La bonne nouvelle : il envoie souvent des signaux avant de lâcher complètement.</p>
+      <h4>Les signaux à surveiller</h4>
+      <ul>
+        <li>Des clics ou grattements réguliers pendant la lecture</li>
+        <li>Un ralentissement progressif sans raison apparente</li>
+        <li>Des fichiers qui deviennent illisibles ou corrompus</li>
+        <li>Des messages d'erreur S.M.A.R.T. au démarrage</li>
+      </ul>
+      <h4>La priorité absolue</h4>
+      <p>Dès le premier signe, la seule action qui compte vraiment est de sauvegarder les données ailleurs. Le disque peut continuer à fonctionner encore des semaines, ou lâcher dans l'heure : il n'y a aucun moyen fiable de savoir lequel.</p>
+      <h4>Vérifier soi-même</h4>
+      <p>Des outils comme <code>smartctl</code> (Linux/Mac) ou CrystalDiskInfo (Windows) affichent l'état de santé réel du disque, bien avant que les symptômes ne deviennent visibles à l'usage.</p>
+    `
+  },
+  {
+    id: "code-43-gpu",
+    tag: "Matériel",
+    date: "2026-03-30",
+    titre: "Code 43 : pourquoi Windows voit votre carte graphique sans pouvoir l'utiliser",
+    resume: "Le fameux Code 43 ne veut pas forcément dire que la carte est morte. Voici comment distinguer les deux cas.",
+    corps: `
+      <p>Le Code 43 signifie que Windows détecte la carte graphique physiquement, mais que son pilote refuse de l'initialiser. C'est une erreur de communication, pas nécessairement une panne matérielle.</p>
+      <h4>Logiciel ou matériel ?</h4>
+      <p>Un pilote corrompu par une mauvaise mise à jour est la cause la plus fréquente et la plus facile à corriger. Une carte réellement défaillante est plus rare, mais possible après un incident d'alimentation ou une surchauffe sévère.</p>
+      <h4>La méthode pour trancher</h4>
+      <ul>
+        <li>Désinstaller complètement le pilote avec un outil dédié (en mode sans échec)</li>
+        <li>Réinstaller la dernière version stable depuis le site du fabricant</li>
+        <li>Si l'erreur persiste, tester la carte dans un autre emplacement PCIe</li>
+        <li>Vérifier les connecteurs d'alimentation additionnels de la carte</li>
+      </ul>
+      <p>Si après ces étapes le Code 43 revient systématiquement, la probabilité d'une carte défaillante devient beaucoup plus forte.</p>
+    `
+  },
+  {
+    id: "wifi-connecte-sans-internet",
+    tag: "Réseau",
+    date: "2026-07-10",
+    titre: "Wi-Fi connecté mais « pas d'accès à Internet » : comprendre où ça bloque",
+    resume: "Le PC dit qu'il est connecté, mais rien ne charge. Le problème se situe presque toujours à l'une de ces trois étapes.",
+    corps: `
+      <p>Une connexion réseau fonctionnelle passe par trois étapes successives : obtenir une adresse IP du routeur, joindre le serveur DNS pour traduire les noms de domaine, puis atteindre réellement Internet. Le message « pas d'accès à Internet » signifie qu'une de ces étapes a échoué, sans dire laquelle.</p>
+      <h4>Isoler l'étape fautive</h4>
+      <p>Le test le plus simple consiste à essayer de joindre une adresse IP brute plutôt qu'un nom de domaine. Si ça fonctionne, le problème vient du DNS. Si rien ne passe du tout, l'adresse IP attribuée au PC est probablement invalide.</p>
+      <h4>Les correctifs qui résolvent 90% des cas</h4>
+      <ul>
+        <li>Renouveler l'adresse IP (<code>ipconfig /release</code> puis <code>/renew</code>)</li>
+        <li>Vider le cache DNS (<code>ipconfig /flushdns</code>)</li>
+        <li>Redémarrer la box ou le routeur, pas seulement l'ordinateur</li>
+        <li>Réinitialiser la pile réseau si le problème persiste après un redémarrage</li>
+      </ul>
+      <h4>Quand suspecter le routeur plutôt que le PC</h4>
+      <p>Si plusieurs appareils sur le même réseau ont le même problème en même temps, la panne est côté routeur ou fournisseur d'accès, pas côté ordinateur : inutile de chercher plus loin sur la machine.</p>
+    `
+  },
+  {
+    id: "batterie-portable-usure",
+    tag: "Matériel",
+    date: "2026-07-28",
+    titre: "Autonomie qui s'effondre : ce que l'usure d'une batterie de portable veut vraiment dire",
+    resume: "Une batterie qui tenait 8h et n'en tient plus que 2 n'est pas forcément défectueuse — c'est souvent juste de l'usure normale, mesurable.",
+    corps: `
+      <p>Une batterie lithium-ion perd de la capacité à chaque cycle de charge, même utilisée correctement. Ce n'est pas une panne au sens strict, mais un vieillissement chimique progressif et inévitable.</p>
+      <h4>Mesurer plutôt que deviner</h4>
+      <p>Avant de conclure à un remplacement, mieux vaut comparer la capacité actuelle à la capacité d'origine. Sous Windows, la commande <code>powercfg /batteryreport</code> génère un rapport détaillé avec ces deux valeurs.</p>
+      <h4>À partir de quel seuil remplacer</h4>
+      <ul>
+        <li>Au-dessus de 80% de la capacité d'origine : usure normale, rien à faire</li>
+        <li>Entre 60% et 80% : autonomie réduite mais encore utilisable au quotidien</li>
+        <li>Sous 60% : le remplacement redevient pertinent pour un usage nomade</li>
+      </ul>
+      <h4>Ce qui accélère l'usure</h4>
+      <p>Laisser le PC branché en permanence à 100%, l'exposer à la chaleur, ou le décharger complètement de façon répétée accélèrent tous la dégradation. Une charge maintenue entre 20% et 80% préserve la batterie bien plus longtemps sur la durée.</p>
+    `
+  }
+];
+
+const grid = document.getElementById('grid');
+const reader = document.getElementById('reader');
+const articleContent = document.getElementById('articleContent');
+
+function fmtDate(d){
+  const dt = new Date(d);
+  return dt.toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+}
+
+/* ---------- SEO : URL unique par article + meta dynamiques ---------- */
+const SITE_ORIGIN = "https://buglog-d884a.web.app";
+function updateMetaTags({title, description, url}){
+  document.title = title;
+  const desc = document.getElementById('metaDescription'); if(desc) desc.setAttribute('content', description);
+  const canon = document.getElementById('canonicalLink'); if(canon) canon.setAttribute('href', url);
+  const ogT = document.getElementById('ogTitle'); if(ogT) ogT.setAttribute('content', title);
+  const ogD = document.getElementById('ogDescription'); if(ogD) ogD.setAttribute('content', description);
+  const ogU = document.getElementById('ogUrl'); if(ogU) ogU.setAttribute('content', url);
+  const twT = document.getElementById('twTitle'); if(twT) twT.setAttribute('content', title);
+  const twD = document.getElementById('twDescription'); if(twD) twD.setAttribute('content', description);
+}
+function resetMetaToDefault(){
+  updateMetaTags({
+    title: "Blog BugLog — Comprendre les pannes informatiques avant de réparer",
+    description: "Des articles de fond sur les pannes récurrentes : pourquoi ça arrive, comment le diagnostiquer, et comment l'éviter la prochaine fois.",
+    url: SITE_ORIGIN + "/blog.html"
+  });
+  history.replaceState(null, '', 'blog.html');
+}
+function updateMetaForArticle(a){
+  updateMetaTags({
+    title: `${a.titre} — Blog BugLog`,
+    description: a.resume,
+    url: `${SITE_ORIGIN}/blog.html?article=${encodeURIComponent(a.id)}`
+  });
+  history.replaceState(null, '', `blog.html?article=${encodeURIComponent(a.id)}`);
+}
+
+/* ---------- Articles générés automatiquement (GitHub Actions + IA, voir /automation) ----------
+   S'ajoutent aux articles écrits en dur ci-dessus, stockés dans Firebase sous la clé "custom-articles". */
+const CUSTOM_ARTICLES_KEY = "custom-articles";
+let customArticles = [];
+function getAllArticles(){
+  return [...customArticles, ...articles].sort((a,b)=> new Date(b.date) - new Date(a.date));
+}
+async function loadCustomArticles(){
+  try{
+    const res = await window.storage.get(CUSTOM_ARTICLES_KEY, true);
+    customArticles = (res && res.value) ? JSON.parse(res.value) : [];
+  }catch(e){ customArticles = []; }
+}
+
+function renderArticleGrid(){
+  grid.innerHTML = '';
+  getAllArticles().forEach(a=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="meta"><span class="tag">${a.tag}</span><span>${fmtDate(a.date)}</span><span class="c-badge" id="c-badge-${a.id}">💬 …</span></div>
+      <h3>${a.titre}</h3>
+      <p>${a.resume}</p>
+      <span class="read">Lire l'article →</span>
+    `;
+    card.addEventListener('click', ()=> openArticle(a));
+    grid.appendChild(card);
+    loadCommentBadge(a.id, `article:${a.id}`);
+  });
+}
+
+async function loadCommentBadge(id, key){
+  const badge = document.getElementById(`c-badge-${id}`);
+  if(!badge) return;
+  try{
+    const res = await window.storage.get(`comments:${key}`, true);
+    const items = (res && res.value) ? JSON.parse(res.value) : [];
+    badge.textContent = `💬 ${items.length}`;
+  }catch(e){
+    badge.textContent = `💬 0`;
+  }
+}
+
+function updateBadgeFromKey(key, count){
+  const id = key.replace(/^article:/, '');
+  const badge = document.getElementById(`c-badge-${id}`);
+  if(badge) badge.textContent = `💬 ${count}`;
+}
+
+/* ---------- TOTP (compatible Google Authenticator / Authy / Microsoft Authenticator) ---------- */
+function base32Decode(base32){
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = "";
+  for(const c of base32.replace(/=+$/,'').toUpperCase()){
+    const val = alphabet.indexOf(c);
+    if(val === -1) continue;
+    bits += val.toString(2).padStart(5,'0');
+  }
+  const bytes = [];
+  for(let i=0;i+8<=bits.length;i+=8){
+    bytes.push(parseInt(bits.substr(i,8),2));
+  }
+  return new Uint8Array(bytes);
+}
+
+function base32Encode(bytes){
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = "";
+  for(const b of bytes) bits += b.toString(2).padStart(8,'0');
+  let output = "";
+  for(let i=0;i+5<=bits.length;i+=5){
+    output += alphabet[parseInt(bits.substr(i,5),2)];
+  }
+  const remainder = bits.length % 5;
+  if(remainder){
+    output += alphabet[parseInt(bits.substr(bits.length-remainder).padEnd(5,'0'),2)];
+  }
+  return output;
+}
+
+function generateTotpSecret(){
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  return base32Encode(bytes);
+}
+
+async function generateTOTP(secretBase32, offsetSteps=0, timeStep=30, digits=6){
+  const key = base32Decode(secretBase32);
+  const counter = Math.floor(Date.now()/1000/timeStep) + offsetSteps;
+  const buffer = new ArrayBuffer(8);
+  const view = new DataView(buffer);
+  view.setUint32(0, Math.floor(counter / 0x100000000));
+  view.setUint32(4, counter >>> 0);
+  const cryptoKey = await crypto.subtle.importKey("raw", key, {name:"HMAC", hash:"SHA-1"}, false, ["sign"]);
+  const hmac = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, buffer));
+  const offsetByte = hmac[hmac.length-1] & 0xf;
+  const binCode = ((hmac[offsetByte] & 0x7f) << 24) | ((hmac[offsetByte+1] & 0xff) << 16) |
+                  ((hmac[offsetByte+2] & 0xff) << 8) | (hmac[offsetByte+3] & 0xff);
+  return String(binCode % (10 ** digits)).padStart(digits, '0');
+}
+
+async function verifyTOTP(secretBase32, code){
+  for(const offset of [-1, 0, 1]){
+    if(await generateTOTP(secretBase32, offset) === code) return true;
+  }
+  return false;
+}
+
+/* ---------- ANTI-SPAM : délai minimum entre deux publications ---------- */
+const _lastSubmitTimes = {};
+function canSubmit(actionKey, cooldownMs = 8000){
+  const now = Date.now();
+  const last = _lastSubmitTimes[actionKey] || 0;
+  if(now - last < cooldownMs) return false;
+  _lastSubmitTimes[actionKey] = now;
+  return true;
+}
+
+function historyKey(name){
+  return `history:${String(name).trim().toLowerCase()}`;
+}
+
+async function addToHistory(name, entry){
+  try{
+    const hKey = historyKey(name);
+    const res = await window.storage.get(hKey, true).catch(()=>null);
+    const hist = (res && res.value) ? JSON.parse(res.value) : [];
+    hist.push(entry);
+    await window.storage.set(hKey, JSON.stringify(hist), true);
+  }catch(e){ /* non-bloquant */ }
+}
+
+function escapeHtml(s){
+  if(s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fmtShort(iso){
+  try{ return new Date(iso).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; }
+}
+function stripHtml(html){
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g,' ').trim();
+}
+
+const GEMINI_API_KEY = "AQ.Ab8RN6JmnUGxmhq29yNlCZIzIoW-FKJ5X7lBAaOt-2jc4aZrxw";
+const GEMINI_MODEL_PRIMARY = "gemini-3.5-flash";
+const GEMINI_MODEL_FALLBACK = "gemini-3.5-flash-lite";
+
+async function callGeminiWithModel(prompt, maxTokens, model){
+  const url = `https://generativelanguage.googleapis.com/v1beta/interactions`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY
+    },
+    body: JSON.stringify({
+      model: model,
+      input: prompt,
+      generation_config: { max_output_tokens: maxTokens, thinking_level: "low" }
+    })
+  });
+  const data = await response.json();
+  return { ok: response.ok, status: response.status, data };
+}
+
+async function callGemini(prompt, maxTokens){
+  let result = await callGeminiWithModel(prompt, maxTokens, GEMINI_MODEL_PRIMARY);
+  if(!result.ok && (result.status === 429 || result.data?.error?.status === 'RESOURCE_EXHAUSTED')){
+    console.warn(`Quota ${GEMINI_MODEL_PRIMARY} atteint, bascule sur ${GEMINI_MODEL_FALLBACK}.`);
+    result = await callGeminiWithModel(prompt, maxTokens, GEMINI_MODEL_FALLBACK);
+  }
+  if(!result.ok || result.data?.error){
+    console.error("Erreur API Gemini :", result.data?.error || result.data);
+    return "";
+  }
+  const steps = result.data?.steps || [];
+  const text = steps
+    .filter(s => s.type === "model_output")
+    .flatMap(s => (s.content || []).filter(c => c.type === "text").map(c => c.text || ""))
+    .join("\n")
+    .trim();
+  return text;
+}
+
+/* ---------- MODÉRATION DES COMMENTAIRES ----------
+   Même système que sur la base de bugs : filtre mots interdits + vérification IA.
+   Les commentaires mis en attente sont visibles et traités depuis le panneau "Modération"
+   d'index.html (file d'attente partagée sur le même backend). */
+const PENDING_COMMENTS_KEY = "pending-comments";
+const HARD_BLOCK_WORDS = [
+  "connard","connasse","salope","pute","enculé","encule","batard","putain","enfoiré","branleur","fdp",
+  "porno","pornographie","xxx",
+  "fuck","fucking","bitch","asshole","cunt"
+];
+function normalizeForFilter(text){
+  return String(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function containsHardBlockedWord(text){
+  const normalized = normalizeForFilter(text);
+  return HARD_BLOCK_WORDS.some(w => new RegExp(`\\b${w}\\b`, 'i').test(normalized));
+}
+async function moderateComment(text){
+  try{
+    const prompt = `Tu es le modérateur des commentaires du site BugLog, un site francophone de dépannage informatique (Windows, macOS, Linux, matériel, réseau).
+
+Analyse ce commentaire et classe-le :
+- "allow" : commentaire normal, même technique ou familier (ex: "tuer un processus", "exécuter en admin", "ça a buggé", un juron léger isolé) — reste permissif sur le ton informel typique d'un forum tech.
+- "review" : contenu à caractère sexuel/nudité, violent ou faisant l'apologie de la violence, à caractère politique (opinions partisanes, propagande, débat politique), haineux ou discriminatoire, ou spam publicitaire — à faire vérifier par un humain avant publication.
+- "block" : cas extrêmes et non ambigus uniquement (incitation directe à la haine ou à la violence, contenu sexuel explicite).
+
+Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour ni balises markdown, au format exact :
+{"decision":"allow","reason":"..."}
+
+Commentaire à analyser :
+"${text}"`;
+    const raw = await callGemini(prompt, 200);
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if(parsed && ['allow','review','block'].includes(parsed.decision)){
+      return parsed;
+    }
+    return { decision: 'review', reason: 'Réponse IA non exploitable' };
+  }catch(e){
+    return { decision: 'review', reason: "Vérification IA indisponible" };
+  }
+}
+function pendingCommentId(){
+  return 'pc-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+}
+
+async function getAIReply(context, comment, thread){
+  try{
+    const historyBlock = (thread && thread.length)
+      ? `\nHistorique récent de la discussion (du plus ancien au plus récent) :\n${thread.map(c=>`${c.isAI ? 'Assistant' : c.name} : ${c.text}`).join('\n')}\n`
+      : '';
+    const prompt = `Tu es l'assistant du blog BugLog, qui publie des articles sur les pannes informatiques.
+
+Article concerné :
+Titre : ${context.titre}
+Résumé : ${context.resume}
+Contenu : ${context.corps}
+${historyBlock}
+Le lecteur vient d'écrire ce nouveau message :
+"${comment}"
+
+Réponds en français, de façon concise et utile, en tenant compte de l'historique ci-dessus si présent (ne recommence pas depuis zéro, réagis à ce qu'il vient d'écrire). S'il dit ne pas comprendre, reformule plus simplement ta réponse précédente. Si c'est un retour ou un remerciement, réponds chaleureusement et brièvement. Termine toujours tes phrases, ne les laisse jamais coupées. Ne te présente pas, va droit à la réponse.`;
+    const text = await callGemini(prompt, 1200);
+    return text || null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function initComments(key, articleContext){
+  const container = document.querySelector('.comments');
+  const listEl = container.querySelector('.comments-list');
+  const form = container.querySelector('.comments-form');
+  const storageKey = `comments:${key}`;
+
+  if(currentUser){
+    form.querySelector('.c-name').value = currentUser.displayName;
+    form.querySelector('.c-name').readOnly = true;
+  }
+
+  function renderList(items){
+    if(!items.length){
+      listEl.innerHTML = '<p class="c-empty">Aucun commentaire pour l’instant — soyez le premier à réagir.</p>';
+      return;
+    }
+    listEl.innerHTML = items.map((c,i)=>`
+      <div class="comment-item${c.isAI?' ai':''}">
+        <div class="c-head"><span class="c-name">${c.isAI?'🤖 ':''}${escapeHtml(c.name)}</span><span class="c-date">${fmtShort(c.date)}</span></div>
+        <p>${escapeHtml(c.text)}</p>
+        ${isAdmin ? `<button type="button" class="comment-delete-btn" data-del-comment-index="${i}">🗑 Supprimer</button>` : ''}
+      </div>`).join('');
+  }
+
+  function appendThinking(){
+    listEl.insertAdjacentHTML('beforeend', `
+      <div class="comment-item ai thinking" id="ai-thinking-article">
+        <div class="c-head"><span class="c-name">🤖 Assistant BugLog</span></div>
+        <p>Rédaction de la réponse…</p>
+      </div>`);
+  }
+  function removeThinking(){
+    const el = document.getElementById('ai-thinking-article');
+    if(el) el.remove();
+  }
+
+  async function fetchItems(){
+    try{
+      const res = await window.storage.get(storageKey, true);
+      return (res && res.value) ? JSON.parse(res.value) : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  // Suppression d'un commentaire par l'admin (délégation, remplace l'ancien écouteur à chaque changement d'article)
+  if(listEl._deleteHandler){
+    listEl.removeEventListener('click', listEl._deleteHandler);
+  }
+  listEl._deleteHandler = async (e)=>{
+    const btn = e.target.closest('[data-del-comment-index]');
+    if(!btn) return;
+    if(!confirm("Supprimer définitivement ce commentaire ?")) return;
+    const idx = parseInt(btn.dataset.delCommentIndex, 10);
+    btn.disabled = true;
+    try{
+      const current = await fetchItems();
+      current.splice(idx, 1);
+      await window.storage.set(storageKey, JSON.stringify(current), true);
+      renderList(current);
+      updateBadgeFromKey(key, current.length);
+    }catch(err){
+      alert("Impossible de supprimer pour le moment. Réessayez.");
+      btn.disabled = false;
+    }
+  };
+  listEl.addEventListener('click', listEl._deleteHandler);
+
+  // Remove any previous submit handler by cloning the form
+  const freshForm = form.cloneNode(true);
+  form.replaceWith(freshForm);
+  // Le gestionnaire est attaché immédiatement, avant le chargement des commentaires,
+  // pour qu'un clic rapide sur "Publier" ne déclenche jamais l'envoi natif du formulaire.
+  freshForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const nameInput = freshForm.querySelector('.c-name');
+    const textInput = freshForm.querySelector('.c-text');
+    const name = nameInput.value.trim();
+    const text = textInput.value.trim();
+    if(!name || !text) return;
+    if(!canSubmit('comment:'+key)){
+      alert("Merci de patienter quelques secondes avant de publier un autre commentaire.");
+      return;
+    }
+    const btn = freshForm.querySelector('button');
+    btn.disabled = true; btn.textContent = 'Vérification…';
+
+    if(!isAdmin){
+      if(containsHardBlockedWord(text)){
+        alert("Ce commentaire contient du contenu non autorisé (langage explicite) et ne peut pas être publié.");
+        btn.disabled = false; btn.textContent = 'Publier';
+        return;
+      }
+      const modResult = await moderateComment(text);
+      if(modResult.decision === 'block'){
+        alert("Ce commentaire contient du contenu non autorisé et ne peut pas être publié.");
+        btn.disabled = false; btn.textContent = 'Publier';
+        return;
+      }
+      if(modResult.decision === 'review'){
+        try{
+          const pc = { id: pendingCommentId(), source:'article', threadKey: key, contextTitre: articleContext ? articleContext.titre : key, name, text, date: new Date().toISOString(), reason: modResult.reason || '' };
+          const res = await window.storage.get(PENDING_COMMENTS_KEY, true).catch(()=>null);
+          const pending = (res && res.value) ? JSON.parse(res.value) : [];
+          pending.push(pc);
+          await window.storage.set(PENDING_COMMENTS_KEY, JSON.stringify(pending), true);
+          nameInput.value = ''; textInput.value = '';
+          alert("Ton commentaire a été envoyé pour vérification avant publication (contenu potentiellement sensible détecté). Il sera visible après validation par un modérateur.");
+        }catch(err){
+          alert("Impossible d'enregistrer le commentaire pour le moment. Réessayez.");
+        }
+        btn.disabled = false; btn.textContent = 'Publier';
+        return;
+      }
+    }
+    btn.textContent = 'Publication…';
+
+    try{
+      const current = await fetchItems();
+      const nowIso = new Date().toISOString();
+      current.push({name, text, date: nowIso});
+      await window.storage.set(storageKey, JSON.stringify(current), true);
+      nameInput.value = ''; textInput.value = '';
+      renderList(current);
+      updateBadgeFromKey(key, current.length);
+      btn.disabled = false; btn.textContent = 'Publier';
+      addToHistory(name, {type:'article', ref: key.replace('article:',''), titre: articleContext ? articleContext.titre : '', text, date: nowIso});
+      notifyAdminOfComment(articleContext ? articleContext.titre : key, name, text);
+
+      if(articleContext){
+        appendThinking();
+        const aiText = await getAIReply(articleContext, text, current.slice(0, -1).slice(-6));
+        removeThinking();
+        if(aiText){
+          const latest = await fetchItems();
+          latest.push({name:"Assistant BugLog", text: aiText, date: new Date().toISOString(), isAI:true});
+          await window.storage.set(storageKey, JSON.stringify(latest), true);
+          renderList(latest);
+          updateBadgeFromKey(key, latest.length);
+        }
+      }
+    }catch(err){
+      alert("Impossible d'enregistrer le commentaire pour le moment. Réessayez.");
+      btn.disabled = false; btn.textContent = 'Publier';
+    }
+  });
+
+  listEl.textContent = 'Chargement…';
+  const items = await fetchItems();
+  renderList(items);
+}
+
+function openArticle(a){
+  articleContent.innerHTML = `
+    <div class="article-meta"><span class="tag">${a.tag}</span><span>${fmtDate(a.date)}</span></div>
+    <h2>${a.titre}</h2>
+    <div class="body">${a.corps}</div>
+    <div class="share-row">
+      <button type="button" id="shareArticleBtn">📤 Partager sur WhatsApp</button>
+    </div>
+  `;
+  grid.classList.add('hidden');
+  reader.classList.add('open');
+  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('shareArticleBtn').addEventListener('click', ()=>{
+    const text = `📰 ${a.titre}\n\n${a.resume}\n\n— via BugLog`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  });
+  initComments(`article:${a.id}`, {titre:a.titre, resume:a.resume, corps: stripHtml(a.corps)});
+  updateMetaForArticle(a);
+}
+
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  reader.classList.remove('open');
+  grid.classList.remove('hidden');
+  resetMetaToDefault();
+});
+
+/* Chargement des articles (dur + Firebase), affichage de la grille, puis ouverture directe
+   d'un article via ?article=id si présent (lien partagé, indexation) */
+(async function initBlogArticles(){
+  await loadCustomArticles();
+  renderArticleGrid();
+  const params = new URLSearchParams(window.location.search);
+  const articleId = params.get('article');
+  if(articleId){
+    const target = getAllArticles().find(a=>a.id === articleId);
+    if(target) openArticle(target);
+  }
+})();
+
+/* ---------- CONTACT FORM ---------- */
+const CONTACT_KEY = "contact-messages";
+let currentUser = null;
+let isAdmin = false;
+const ADMIN_PASSWORD_HASH = "34b2dcedf70a796339a26884ec866cdc3a771e9b21580f8d96a3dbeae0d9c2af";
+const ADMIN_PASSWORD_SALT = "c1012b28594c11f680224df5a911ce3a";
+const TOTP_SECRET = "DUI24WVJIEMYSWXV";
+
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------- PBKDF2 (hachage de mot de passe avec sel, 100 000 itérations) ---------- */
+function _bytesToHex(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function _hexToBytes(hex){
+  const bytes = new Uint8Array(hex.length / 2);
+  for(let i=0;i<bytes.length;i++) bytes[i] = parseInt(hex.substr(i*2,2), 16);
+  return bytes;
+}
+async function hashPassword(password, saltHex){
+  const salt = saltHex ? _hexToBytes(saltHex) : crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), {name:'PBKDF2'}, false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {name:'PBKDF2', salt, iterations:100000, hash:'SHA-256'}, keyMaterial, 256
+  );
+  return { hash: _bytesToHex(new Uint8Array(bits)), salt: _bytesToHex(salt) };
+}
+
+function userKey(username){
+  return 'user-' + String(username).trim().toLowerCase().replace(/[^a-z0-9_.\-]/g,'_').slice(0,150);
+}
+async function loadUser(username){
+  try{
+    const res = await window.storage.get(userKey(username), true);
+    return (res && res.value) ? JSON.parse(res.value) : null;
+  }catch(e){ return null; }
+}
+async function saveUser(username, data){
+  await window.storage.set(userKey(username), JSON.stringify(data), true);
+}
+
+// Configuration EmailJS
+const EMAILJS_SERVICE_ID = "service_ygz5hyo";
+const EMAILJS_TEMPLATE_ID = "VOTRE_TEMPLATE_ID"; // ⚠ récupération de mot de passe — pas encore configuré
+const EMAILJS_PUBLIC_KEY = "9Nmyaw70XZyNcuKIE";
+// Template pour les notifications de nouveaux commentaires à l'admin
+const EMAILJS_NOTIFY_TEMPLATE_ID = "template_32r1ak7";
+const ADMIN_NOTIFY_EMAIL = "rakiblassoued@gmail.com";
+
+async function sendResetEmail(toEmail, username, code){
+  const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID,
+      template_id: EMAILJS_TEMPLATE_ID,
+      user_id: EMAILJS_PUBLIC_KEY,
+      template_params: { to_email: toEmail, username: username, code: code }
+    })
+  });
+  return res.ok;
+}
+
+async function notifyAdminOfComment(pageTitle, authorName, commentText){
+  try{
+    await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_NOTIFY_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: {
+          to_email: ADMIN_NOTIFY_EMAIL,
+          page_title: pageTitle,
+          author_name: authorName,
+          comment_text: commentText
+        }
+      })
+    });
+  }catch(e){ /* non-bloquant */ }
+}
+
+const contactModal = document.getElementById('contactModal');
+const contactForm = document.getElementById('contactForm');
+
+document.getElementById('openContact').addEventListener('click', ()=>{
+  contactForm.reset();
+  contactModal.classList.add('open');
+});
+document.getElementById('closeContactModal').addEventListener('click', ()=> contactModal.classList.remove('open'));
+contactModal.addEventListener('click', e=>{ if(e.target === contactModal) contactModal.classList.remove('open'); });
+
+contactForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const data = {
+    name: contactForm.name.value.trim(),
+    contact: contactForm.contact.value.trim(),
+    message: contactForm.message.value.trim(),
+    date: new Date().toISOString()
+  };
+  if(!data.name || !data.contact || !data.message) return;
+  if(!canSubmit('contact', 10000)){
+    alert("Merci de patienter quelques secondes avant d'envoyer un autre message.");
+    return;
+  }
+  const btn = document.getElementById('contactSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try{
+    const res = await window.storage.get(CONTACT_KEY, true).catch(()=>null);
+    const msgs = (res && res.value) ? JSON.parse(res.value) : [];
+    msgs.push(data);
+    await window.storage.set(CONTACT_KEY, JSON.stringify(msgs), true);
+    contactModal.classList.remove('open');
+    alert("Merci ! Votre message a bien été envoyé.");
+  }catch(err){
+    alert("Impossible d'envoyer le message pour le moment. Réessayez plus tard.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Envoyer';
+  }
+});
+
+/* ---------- HISTORIQUE DES COMMENTAIRES ---------- */
+const historyModal = document.getElementById('historyModal');
+document.getElementById('openHistory').addEventListener('click', ()=>{
+  document.getElementById('historyContent').innerHTML = '';
+  document.getElementById('historyNameInput').value = currentUser ? currentUser.displayName : '';
+  historyModal.classList.add('open');
+  if(currentUser){
+    document.getElementById('historySearchForm').requestSubmit();
+  }else{
+    setTimeout(()=> document.getElementById('historyNameInput').focus(), 50);
+  }
+});
+document.getElementById('closeHistoryModal').addEventListener('click', ()=> historyModal.classList.remove('open'));
+historyModal.addEventListener('click', e=>{ if(e.target === historyModal) historyModal.classList.remove('open'); });
+
+document.getElementById('historySearchForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const name = document.getElementById('historyNameInput').value.trim();
+  const content = document.getElementById('historyContent');
+  if(!name) return;
+  content.innerHTML = '<div class="mod-empty">Recherche…</div>';
+  try{
+    const res = await window.storage.get(historyKey(name), true);
+    const hist = (res && res.value) ? JSON.parse(res.value) : [];
+    if(!hist.length){
+      content.innerHTML = '<div class="mod-empty">Aucun commentaire trouvé pour ce nom.</div>';
+      return;
+    }
+    const sorted = [...hist].sort((a,b)=> new Date(b.date) - new Date(a.date));
+    content.innerHTML = sorted.map(h=>`
+      <div class="mod-item">
+        <h5>${escapeHtml(h.titre || (h.type==='bug' ? 'Fiche bug' : 'Article'))}</h5>
+        <div class="mod-meta">${h.type==='bug' ? 'Base de bugs' : 'Blog'} · ${fmtShort(h.date)}</div>
+        <p>${escapeHtml(h.text)}</p>
+      </div>`).join('');
+  }catch(err){
+    content.innerHTML = '<div class="mod-empty">Impossible de charger l\'historique pour le moment.</div>';
+  }
+});
+
+/* ---------- USER ACCOUNTS ---------- */
+const accountModal = document.getElementById('accountModal');
+const loginAccountForm = document.getElementById('loginAccountForm');
+const registerAccountForm = document.getElementById('registerAccountForm');
+const registerStep1 = document.getElementById('registerStep1');
+const registerStep2 = document.getElementById('registerStep2');
+const accountBtn = document.getElementById('accountBtn');
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  document.getElementById('navRight').classList.toggle('open');
+});
+let pendingRegistration = null;
+
+function updateAccountBtn(){
+  if(currentUser){
+    accountBtn.textContent = `👤 ${currentUser.displayName} (déconnexion)`;
+    accountBtn.classList.add('active');
+  }else{
+    accountBtn.textContent = "Se connecter";
+    accountBtn.classList.remove('active');
+  }
+  const nameInput = document.querySelector('.comments-form .c-name');
+  if(nameInput){
+    if(currentUser){ nameInput.value = currentUser.displayName; nameInput.readOnly = true; }
+    else{ nameInput.readOnly = false; }
+  }
+}
+
+function resetRegisterSteps(){
+  pendingRegistration = null;
+  registerStep1.style.display = 'block';
+  registerStep2.style.display = 'none';
+  document.getElementById('registerQr').innerHTML = '';
+}
+
+accountBtn.addEventListener('click', ()=>{
+  if(currentUser){
+    currentUser = null;
+    updateAccountBtn();
+  }else{
+    loginAccountForm.reset();
+    registerAccountForm.reset();
+    resetRegisterSteps();
+    document.querySelectorAll('.account-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelector('.account-tab[data-tab="login"]').classList.add('active');
+    loginAccountForm.style.display = 'flex';
+    loginAccountForm.style.flexDirection = 'column';
+    registerAccountForm.style.display = 'none';
+    document.getElementById('accountModalTitle').textContent = 'Se connecter';
+    accountModal.classList.add('open');
+  }
+});
+document.getElementById('closeAccountModal').addEventListener('click', ()=> accountModal.classList.remove('open'));
+accountModal.addEventListener('click', e=>{ if(e.target === accountModal) accountModal.classList.remove('open'); });
+
+document.querySelectorAll('.account-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.account-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const isLogin = tab.dataset.tab === 'login';
+    loginAccountForm.style.display = isLogin ? 'flex' : 'none';
+    loginAccountForm.style.flexDirection = 'column';
+    registerAccountForm.style.display = isLogin ? 'none' : 'block';
+    resetRegisterSteps();
+    document.getElementById('accountModalTitle').textContent = isLogin ? 'Se connecter' : 'Créer un compte';
+  });
+});
+
+document.getElementById('continueAsGuest').addEventListener('click', ()=>{
+  currentUser = null;
+  updateAccountBtn();
+  accountModal.classList.remove('open');
+});
+
+registerAccountForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(registerStep2.style.display !== 'none') return;
+  const username = registerAccountForm.username.value.trim();
+  const email = registerAccountForm.email.value.trim();
+  const password = registerAccountForm.password.value;
+  if(!username || !email || !password) return;
+  if(!canSubmit('register', 5000)){
+    alert("Merci de patienter quelques secondes avant de réessayer.");
+    return;
+  }
+  const btn = registerStep1.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Vérification…';
+  try{
+    const key = username.toLowerCase();
+    const existing = await loadUser(key);
+    if(existing){
+      alert("Ce nom d'utilisateur est déjà pris.");
+      return;
+    }
+    const secret = generateTotpSecret();
+    pendingRegistration = { username, email, password, secret };
+    const uri = `otpauth://totp/BugLog:${encodeURIComponent(username)}?secret=${secret}&issuer=BugLog&algorithm=SHA1&digits=6&period=30`;
+    document.getElementById('registerQr').innerHTML = '';
+    new QRCode(document.getElementById('registerQr'), { text: uri, width: 180, height: 180 });
+    registerStep1.style.display = 'none';
+    registerStep2.style.display = 'block';
+  }catch(err){
+    alert("Une erreur est survenue. Réessaie.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Continuer';
+  }
+});
+
+document.getElementById('confirmRegisterBtn').addEventListener('click', async ()=>{
+  if(!pendingRegistration) return;
+  const codeInput = registerAccountForm.confirmOtp;
+  const code = codeInput.value.trim();
+  const btn = document.getElementById('confirmRegisterBtn');
+  btn.disabled = true; btn.textContent = 'Vérification…';
+  try{
+    const valid = await verifyTOTP(pendingRegistration.secret, code);
+    if(!valid){
+      alert("Code incorrect. Vérifie l'heure de ton téléphone et réessaie.");
+      return;
+    }
+    const key = pendingRegistration.username.toLowerCase();
+    const existing = await loadUser(key);
+    if(existing){
+      alert("Ce nom d'utilisateur vient d'être pris entre-temps. Recommence avec un autre nom.");
+      resetRegisterSteps();
+      registerAccountForm.reset();
+      return;
+    }
+    const { hash: passwordHash, salt: passwordSalt } = await hashPassword(pendingRegistration.password);
+    const newUser = {
+      displayName: pendingRegistration.username,
+      email: pendingRegistration.email,
+      passwordHash,
+      passwordSalt,
+      totpSecret: pendingRegistration.secret,
+      createdAt: new Date().toISOString()
+    };
+    await saveUser(key, newUser);
+    currentUser = { username: key, displayName: pendingRegistration.username };
+    pendingRegistration = null;
+    updateAccountBtn();
+    accountModal.classList.remove('open');
+  }catch(err){
+    alert("Impossible de créer le compte pour le moment. Réessaie.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Confirmer et créer mon compte';
+  }
+});
+
+loginAccountForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const username = loginAccountForm.username.value.trim();
+  const password = loginAccountForm.password.value;
+  const otp = loginAccountForm.otp.value.trim();
+  if(!username || !password || !otp) return;
+  const btn = loginAccountForm.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try{
+    const key = username.toLowerCase();
+    const user = await loadUser(key);
+    if(!user){
+      alert("Aucun compte avec ce nom d'utilisateur.");
+      return;
+    }
+    let passwordOk = false;
+    if(user.passwordSalt){
+      const { hash } = await hashPassword(password, user.passwordSalt);
+      passwordOk = (hash === user.passwordHash);
+    }else{
+      const legacyHash = await sha256Hex(password);
+      passwordOk = (legacyHash === user.passwordHash);
+      if(passwordOk){
+        const { hash, salt } = await hashPassword(password);
+        user.passwordHash = hash;
+        user.passwordSalt = salt;
+        await saveUser(key, user);
+      }
+    }
+    if(!passwordOk){
+      alert("Mot de passe incorrect.");
+      return;
+    }
+    const validOtp = await verifyTOTP(user.totpSecret, otp);
+    if(!validOtp){
+      alert("Code d'authentification incorrect.");
+      return;
+    }
+    currentUser = { username: key, displayName: user.displayName };
+    updateAccountBtn();
+    accountModal.classList.remove('open');
+  }catch(err){
+    alert("Impossible de se connecter pour le moment. Réessaie.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+});
+
+/* ---------- FORGOT PASSWORD ---------- */
+const forgotModal = document.getElementById('forgotModal');
+const forgotStep1 = document.getElementById('forgotStep1');
+const forgotStep2 = document.getElementById('forgotStep2');
+const forgotRequestForm = document.getElementById('forgotRequestForm');
+const forgotResetForm = document.getElementById('forgotResetForm');
+let forgotUsernameKey = null;
+
+document.getElementById('openForgotPassword').addEventListener('click', ()=>{
+  accountModal.classList.remove('open');
+  forgotRequestForm.reset();
+  forgotResetForm.reset();
+  forgotStep1.style.display = 'block';
+  forgotStep2.style.display = 'none';
+  forgotUsernameKey = null;
+  forgotModal.classList.add('open');
+});
+document.getElementById('closeForgotModal').addEventListener('click', ()=> forgotModal.classList.remove('open'));
+forgotModal.addEventListener('click', e=>{ if(e.target === forgotModal) forgotModal.classList.remove('open'); });
+
+forgotRequestForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const username = forgotRequestForm.username.value.trim();
+  if(!username) return;
+  const btn = forgotRequestForm.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try{
+    const key = username.toLowerCase();
+    const user = await loadUser(key);
+    if(!user || !user.email){
+      alert("Aucun compte avec email trouvé pour ce nom d'utilisateur.");
+      return;
+    }
+    const code = String(Math.floor(100000 + Math.random()*900000));
+    user.resetCode = code;
+    user.resetExpires = Date.now() + 15*60*1000;
+    await saveUser(key, user);
+    const sent = await sendResetEmail(user.email, user.displayName, code);
+    if(!sent){
+      alert("Impossible d'envoyer l'email pour le moment. Vérifie la configuration EmailJS.");
+      return;
+    }
+    forgotUsernameKey = key;
+    forgotStep1.style.display = 'none';
+    forgotStep2.style.display = 'block';
+  }catch(err){
+    alert("Une erreur est survenue. Réessaie.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Envoyer le code';
+  }
+});
+
+forgotResetForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!forgotUsernameKey) return;
+  const code = forgotResetForm.code.value.trim();
+  const newPassword = forgotResetForm.newPassword.value;
+  if(!code || !newPassword) return;
+  const btn = forgotResetForm.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Réinitialisation…';
+  try{
+    const user = await loadUser(forgotUsernameKey);
+    if(!user || !user.resetCode || user.resetCode !== code){
+      alert("Code incorrect.");
+      return;
+    }
+    if(!user.resetExpires || Date.now() > user.resetExpires){
+      alert("Ce code a expiré. Redemande-en un nouveau.");
+      return;
+    }
+    const { hash, salt } = await hashPassword(newPassword);
+    user.passwordHash = hash;
+    user.passwordSalt = salt;
+    delete user.resetCode;
+    delete user.resetExpires;
+    await saveUser(forgotUsernameKey, user);
+    forgotModal.classList.remove('open');
+    alert("Mot de passe changé avec succès. Tu peux maintenant te reconnecter.");
+  }catch(err){
+    alert("Une erreur est survenue. Réessaie.");
+  }finally{
+    btn.disabled = false; btn.textContent = 'Réinitialiser le mot de passe';
+  }
+});
+
+/* ---------- ADMIN LOGIN ---------- */
+const adminLoginModal = document.getElementById('adminLoginModal');
+const adminLoginForm = document.getElementById('adminLoginForm');
+const adminBtn = document.getElementById('adminBtn');
+
+adminBtn.addEventListener('click', ()=>{
+  if(isAdmin){
+    isAdmin = false;
+    adminBtn.textContent = "Connexion admin";
+    adminBtn.classList.remove('active');
+  }else{
+    adminLoginForm.reset();
+    adminLoginModal.classList.add('open');
+    setTimeout(()=> adminLoginForm.pwd.focus(), 50);
+  }
+});
+document.getElementById('closeAdminLoginModal').addEventListener('click', ()=> adminLoginModal.classList.remove('open'));
+adminLoginModal.addEventListener('click', e=>{ if(e.target === adminLoginModal) adminLoginModal.classList.remove('open'); });
+
+adminLoginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const pwd = adminLoginForm.pwd.value;
+  const otp = adminLoginForm.otp.value.trim();
+  const submitBtn = adminLoginForm.querySelector('button[type="submit"]');
+  submitBtn.disabled = true; submitBtn.textContent = 'Vérification…';
+  try{
+    const { hash: pwdHash } = await hashPassword(pwd, ADMIN_PASSWORD_SALT);
+    if(pwdHash !== ADMIN_PASSWORD_HASH){
+      alert("Mot de passe incorrect.");
+      return;
+    }
+    const validOtp = await verifyTOTP(TOTP_SECRET, otp);
+    if(!validOtp){
+      alert("Code d'authentification incorrect.");
+      return;
+    }
+    isAdmin = true;
+    adminBtn.textContent = "Admin ✓ (déconnexion)";
+    adminBtn.classList.add('active');
+    adminLoginModal.classList.remove('open');
+  }finally{
+    submitBtn.disabled = false; submitBtn.textContent = 'Se connecter';
+  }
+});
+</script>
+
+<!-- ---------- COOKIES / GOOGLE ANALYTICS ----------
+     Aucune mesure d'audience n'est chargée sans consentement explicite (RGPD).
+     Remplace GA_MEASUREMENT_ID ci-dessous par ton propre ID (format G-XXXXXXXXXX). -->
+<div id="cookieBanner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:200;background:#0d1728;border-top:1px solid #223050;padding:16px 20px;">
+  <div style="max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;">
+    <p style="margin:0;font-size:13px;color:#d7e2f2;font-family:'IBM Plex Sans',sans-serif;flex:1;min-width:240px;">
+      Ce site utilise des cookies de mesure d'audience (Google Analytics) uniquement avec votre accord.
+      <a href="mentions-legales.html" style="color:#4fd1c5;">En savoir plus</a>
+    </p>
+    <div style="display:flex;gap:8px;flex:none;">
+      <button type="button" id="cookieRefuse" style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:none;border:1px solid #223050;color:#7b8bab;border-radius:6px;padding:8px 16px;cursor:pointer;">Refuser</button>
+      <button type="button" id="cookieAccept" style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;background:#4fd1c5;border:none;color:#04201d;border-radius:6px;padding:8px 16px;cursor:pointer;">Accepter</button>
+    </div>
+  </div>
+</div>
+<script>
+const GA_MEASUREMENT_ID = "G-XXXXXXXXXX"; // ⚠️ à remplacer par ton ID Google Analytics réel
+function loadGoogleAnalytics(){
+  if(!GA_MEASUREMENT_ID || GA_MEASUREMENT_ID.includes('XXXX')) return;
+  const s1 = document.createElement('script');
+  s1.async = true;
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(s1);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', GA_MEASUREMENT_ID, { anonymize_ip: true });
+  window.gtag = gtag;
+}
+(function initCookieConsent(){
+  const consent = localStorage.getItem('buglog-cookie-consent');
+  if(consent === 'accepted'){ loadGoogleAnalytics(); return; }
+  if(consent === 'refused') return;
+  const banner = document.getElementById('cookieBanner');
+  if(!banner) return;
+  banner.style.display = 'block';
+  document.getElementById('cookieAccept').addEventListener('click', ()=>{
+    localStorage.setItem('buglog-cookie-consent', 'accepted');
+    banner.style.display = 'none';
+    loadGoogleAnalytics();
+  });
+  document.getElementById('cookieRefuse').addEventListener('click', ()=>{
+    localStorage.setItem('buglog-cookie-consent', 'refused');
+    banner.style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>

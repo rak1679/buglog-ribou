@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://buglog-d884a.web.app/sitemap.xml
