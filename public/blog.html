@@ -982,7 +982,11 @@ ${historyBlock}
 Le lecteur vient d'écrire ce nouveau message :
 "${comment}"
 
-Réponds en français, de façon concise et utile, en tenant compte de l'historique ci-dessus si présent (ne recommence pas depuis zéro, réagis à ce qu'il vient d'écrire). S'il dit ne pas comprendre, reformule plus simplement ta réponse précédente. Si c'est un retour ou un remerciement, réponds chaleureusement et brièvement. Termine toujours tes phrases, ne les laisse jamais coupées. Ne te présente pas, va droit à la réponse.`;
+Réponds en français, de façon concise et utile, en tenant compte de l'historique ci-dessus si présent (ne recommence pas depuis zéro, réagis à ce qu'il vient d'écrire). S'il dit ne pas comprendre, reformule plus simplement ta réponse précédente. Si c'est un retour ou un remerciement, réponds chaleureusement et brièvement.
+
+Important : tu ne réponds QU'aux sujets liés à l'informatique (pannes, matériel, logiciel, réseau, dépannage). Si le message n'a aucun rapport avec l'informatique, ne tente PAS d'y répondre même partiellement — réponds uniquement, mot pour mot : "Je suis là pour répondre aux questions liées à l'informatique 🙂 N'hésite pas si tu as une question sur une panne ou un problème technique !"
+
+Termine toujours tes phrases, ne les laisse jamais coupées. Ne te présente pas, va droit à la réponse.`;
     const text = await callGemini(prompt, 1200);
     return text || null;
   }catch(e){
@@ -1097,6 +1101,11 @@ async function initComments(key, articleContext){
           pending.push(pc);
           await window.storage.set(PENDING_COMMENTS_KEY, JSON.stringify(pending), true);
           nameInput.value = ''; textInput.value = '';
+          notifyAdminOfComment(
+            `⚠️ À valider — ${articleContext ? articleContext.titre : key}`,
+            name,
+            `[Raison IA : ${modResult.reason || 'non précisée'}]\n\n${text}`
+          );
           alert("Ton commentaire a été envoyé pour vérification avant publication (contenu potentiellement sensible détecté). Il sera visible après validation par un modérateur.");
         }catch(err){
           alert("Impossible d'enregistrer le commentaire pour le moment. Réessayez.");
