@@ -3230,6 +3230,15 @@ msgModal.addEventListener('click', e=>{ if(e.target === msgModal) msgModal.class
 
 let msgPanelTab = 'inbox';
 
+function looksLikePhone(contact){
+  const digitsOnly = contact.replace(/[\s\-().]/g, '');
+  return /^\+?\d{6,15}$/.test(digitsOnly);
+}
+function waReplyLink(contact, name){
+  const digitsOnly = contact.replace(/[^\d+]/g, '').replace(/^\+/, '');
+  const text = `Bonjour ${name}, je vous recontacte suite à votre message sur BugLog.`;
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent(text)}`;
+}
 function renderMsgPanel(){
   const el = document.getElementById('msgContent');
   let html = `
@@ -3249,12 +3258,15 @@ function renderMsgPanel(){
         ? `<button class="mod-approve" data-archive-index="${idx}">Archiver</button>`
         : `<button class="mod-reject" data-restore-index="${idx}">Restaurer</button>`;
       const deleteBtn = `<button class="mod-reject" data-delete-msg-index="${idx}" data-delete-msg-tab="${msgPanelTab}">Supprimer définitivement</button>`;
+      const waBtn = looksLikePhone(m.contact)
+        ? `<a href="${waReplyLink(m.contact, m.name)}" target="_blank" rel="noopener" class="mod-approve" style="text-decoration:none;display:inline-block;background:#25D366;">💬 Répondre sur WhatsApp</a>`
+        : '';
       return `
         <div class="mod-item">
           <h5>${escapeHtml(m.name)}</h5>
           <div class="mod-meta">${escapeHtml(m.contact)} · ${fmtShort(m.date)}</div>
           <p>${escapeHtml(m.message)}</p>
-          <div class="mod-actions">${actionBtn}${deleteBtn}</div>
+          <div class="mod-actions">${waBtn}${actionBtn}${deleteBtn}</div>
         </div>`;
     }).join('');
   }
