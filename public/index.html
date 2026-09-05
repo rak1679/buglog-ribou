@@ -2241,7 +2241,18 @@ function renderAIChat(){
         <button type="submit" style="font-family:var(--font-mono);font-size:12.5px;font-weight:600;background:var(--accent);color:#04201d;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;">Envoyer</button>
       </form>
       <button type="button" id="suggestToAdminBtn" class="suggest-admin-btn">📨 Suggérer l'ajout de cette panne à l'admin</button>
+      ${isAdmin ? `<button type="button" id="adminAddFromAiBtn" class="suggest-admin-btn" style="margin-left:8px;border-color:var(--accent);color:var(--accent);">➕ Ajouter directement à la base</button>` : ''}
     </div>`;
+
+  if(isAdmin){
+    const adminBtn = document.getElementById('adminAddFromAiBtn');
+    if(adminBtn){
+      adminBtn.addEventListener('click', ()=>{
+        const lastAnswer = [...aiChatHistory].reverse().find(m => m.role === 'assistant');
+        openAddModalFromAI(aiChatQuery, lastAnswer ? lastAnswer.text : '');
+      });
+    }
+  }
 
   document.getElementById('aiFollowupForm').addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -2269,13 +2280,17 @@ function renderAIChat(){
     sBtn.disabled = true; sBtn.textContent = 'Envoi…';
     try{
       const conversation = aiChatHistory.map(m => `${m.role==='assistant' ? 'IA' : 'Visiteur'} : ${m.text}`).join('\n\n');
+      const lastAiAnswer = [...aiChatHistory].reverse().find(m => m.role === 'assistant');
       const res = await window.storage.get(CONTACT_KEY, true).catch(()=>null);
       contactMessages = (res && res.value) ? JSON.parse(res.value) : contactMessages;
       contactMessages.push({
         name: "Suggestion (recherche sans résultat)",
         contact: "—",
         message: `Recherche : "${aiChatQuery}"\n\nConversation avec l'IA :\n${conversation}`,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        isSuggestion: true,
+        suggestedTitre: aiChatQuery,
+        suggestedFix: lastAiAnswer ? lastAiAnswer.text : ''
       });
       await window.storage.set(CONTACT_KEY, JSON.stringify(contactMessages), true);
       sBtn.textContent = '✓ Envoyé à l\'admin';
@@ -2582,6 +2597,19 @@ addForm.addEventListener('submit', async (e)=>{
     btn.textContent = editId ? (isAdmin ? "Enregistrer" : "Proposer la modification") : (isAdmin ? "Publier" : "Proposer");
   }
 });
+
+function openAddModalFromAI(query, aiAnswer){
+  addForm.reset();
+  addForm.dataset.editId = "";
+  addForm.titre.value = query;
+  addForm.desc.value = `Recherche initiale du visiteur : "${query}"`;
+  addForm.fix.value = aiAnswer;
+  const note = document.getElementById('modalNote');
+  document.getElementById('modalTitle').textContent = "Ajouter un bug (pré-rempli par l'IA)";
+  document.getElementById('modalSubmitBtn').textContent = "Publier";
+  note.style.display = "none";
+  modal.classList.add('open');
+}
 
 function openEditModal(b){
   addForm.reset();
@@ -3261,12 +3289,15 @@ function renderMsgPanel(){
       const waBtn = looksLikePhone(m.contact)
         ? `<a href="${waReplyLink(m.contact, m.name)}" target="_blank" rel="noopener" class="mod-approve" style="text-decoration:none;display:inline-block;background:#25D366;">💬 Répondre sur WhatsApp</a>`
         : '';
+      const addToBaseBtn = m.isSuggestion
+        ? `<button class="mod-approve" style="background:var(--accent);" data-add-suggestion-index="${idx}" data-add-suggestion-tab="${msgPanelTab}">➕ Ajouter à la base</button>`
+        : '';
       return `
         <div class="mod-item">
           <h5>${escapeHtml(m.name)}</h5>
           <div class="mod-meta">${escapeHtml(m.contact)} · ${fmtShort(m.date)}</div>
           <p>${escapeHtml(m.message)}</p>
-          <div class="mod-actions">${waBtn}${actionBtn}${deleteBtn}</div>
+          <div class="mod-actions">${addToBaseBtn}${waBtn}${actionBtn}${deleteBtn}</div>
         </div>`;
     }).join('');
   }
@@ -3295,6 +3326,18 @@ function renderMsgPanel(){
         alert("Impossible d'archiver pour le moment.");
         btn.disabled = false;
       }
+    });
+  });
+
+  el.querySelectorAll('button[data-add-suggestion-index]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.dataset.addSuggestionIndex, 10);
+      const tab = btn.dataset.addSuggestionTab;
+      const source = tab === 'inbox' ? contactMessages : archivedMessages;
+      const m = source[idx];
+      if(!m) return;
+      msgModal.classList.remove('open');
+      openAddModalFromAI(m.suggestedTitre || '', m.suggestedFix || '');
     });
   });
 
