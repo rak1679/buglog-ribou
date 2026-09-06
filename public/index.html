@@ -1271,62 +1271,62 @@ footer{
 <div class="modal-overlay" id="addModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h3 id="modalTitle">Ajouter un bug</h3>
+      <h3 id="modalTitle" data-i18n="modal_add_title">Ajouter un bug</h3>
       <button type="button" class="modal-close" id="closeModal">&times;</button>
     </div>
     <form id="addForm">
       <div class="form-row">
         <div class="field">
-          <label>Catégorie</label>
+          <label data-i18n="label_category">Catégorie</label>
           <select name="cat">
-            <option value="logiciel">Logiciel</option>
-            <option value="materiel">Matériel</option>
+            <option value="logiciel" data-i18n="cat_logiciel">Logiciel</option>
+            <option value="materiel" data-i18n="cat_materiel">Matériel</option>
           </select>
         </div>
         <div class="field">
-          <label>Plateforme</label>
+          <label data-i18n="label_platform">Plateforme</label>
           <select name="os">
             <option value="Windows">Windows</option>
             <option value="macOS">macOS</option>
             <option value="Linux">Linux</option>
-            <option value="Matériel">Matériel</option>
-            <option value="Réseau">Réseau</option>
+            <option value="Matériel" data-i18n="cat_materiel">Matériel</option>
+            <option value="Réseau" data-i18n="filter_network">Réseau</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="field">
-          <label>Version (optionnel)</label>
-          <input type="text" name="version" placeholder="ex. 11, XP, Server 2019">
+          <label data-i18n="label_version_optional">Version (optionnel)</label>
+          <input type="text" name="version" data-i18n-placeholder="placeholder_version" placeholder="ex. 11, XP, Server 2019">
         </div>
         <div class="field">
-          <label>Code d'erreur (optionnel)</label>
-          <input type="text" name="code" placeholder="ex. 0x0000007B">
+          <label data-i18n="label_errorcode_optional">Code d'erreur (optionnel)</label>
+          <input type="text" name="code" data-i18n-placeholder="placeholder_code" placeholder="ex. 0x0000007B">
         </div>
       </div>
       <div class="field">
-        <label>Titre</label>
-        <input type="text" name="titre" placeholder="ex. L'écran se fige au démarrage" required>
+        <label data-i18n="label_title">Titre</label>
+        <input type="text" name="titre" data-i18n-placeholder="placeholder_titre" placeholder="ex. L'écran se fige au démarrage" required>
       </div>
       <div class="field">
-        <label>Gravité</label>
+        <label data-i18n="label_severity">Gravité</label>
         <select name="gravite">
-          <option value="critique">Critique</option>
-          <option value="moyen" selected>Moyen</option>
-          <option value="mineur">Mineur</option>
+          <option value="critique" data-i18n="sev_critique">Critique</option>
+          <option value="moyen" selected data-i18n="sev_moyen">Moyen</option>
+          <option value="mineur" data-i18n="sev_mineur">Mineur</option>
         </select>
       </div>
       <div class="field">
-        <label>Symptôme / description</label>
-        <textarea name="desc" placeholder="Décrivez le bug et son contexte" required></textarea>
+        <label data-i18n="label_symptom_desc">Symptôme / description</label>
+        <textarea name="desc" data-i18n-placeholder="placeholder_desc_field" placeholder="Décrivez le bug et son contexte" required></textarea>
       </div>
       <div class="field">
-        <label>Correctif (optionnel — laisse vide si tu poses juste une question)</label>
-        <textarea name="fix" placeholder="1. Première étape&#10;2. Deuxième étape…&#10;(laisse vide si tu ne connais pas la solution)"></textarea>
+        <label data-i18n="label_fix_optional">Correctif (optionnel — laisse vide si tu poses juste une question)</label>
+        <textarea name="fix" data-i18n-placeholder="placeholder_fix_field" placeholder="1. Première étape&#10;2. Deuxième étape…&#10;(laisse vide si tu ne connais pas la solution)"></textarea>
       </div>
-      <div class="modal-note" id="modalNote" style="display:none;">⚠ Votre proposition sera envoyée à l'administrateur pour validation avant publication.</div>
+      <div class="modal-note" id="modalNote" data-i18n="modal_note_pending" style="display:none;">⚠ Votre proposition sera envoyée à l'administrateur pour validation avant publication.</div>
       <div class="modal-actions">
-        <button type="submit" id="modalSubmitBtn">Publier</button>
+        <button type="submit" id="modalSubmitBtn" data-i18n="btn_publier">Publier</button>
       </div>
     </form>
   </div>
@@ -1486,6 +1486,22 @@ const UI_TEXT = {
     placeholder_firstname: "Votre prénom", placeholder_comment: "Un commentaire, une astuce, ça a marché pour vous ?",
     tag_pending_edit: "modif. en attente",
     cat_logiciel: "Logiciel", cat_materiel: "Matériel",
+    modal_add_title: "Ajouter un bug", modal_propose_title: "Proposer un bug",
+    modal_edit_title: "Modifier ce bug", modal_proposeedit_title: "Proposer une modification",
+    modal_addai_title: "Ajouter un bug (pré-rempli par l'IA)",
+    label_category: "Catégorie", label_platform: "Plateforme",
+    label_version_optional: "Version (optionnel)", label_errorcode_optional: "Code d'erreur (optionnel)",
+    label_title: "Titre", label_severity: "Gravité",
+    sev_critique: "Critique", sev_moyen: "Moyen", sev_mineur: "Mineur",
+    label_symptom_desc: "Symptôme / description",
+    label_fix_optional: "Correctif (optionnel — laisse vide si tu poses juste une question)",
+    placeholder_version: "ex. 11, XP, Server 2019", placeholder_code: "ex. 0x0000007B",
+    placeholder_titre: "ex. L'écran se fige au démarrage",
+    placeholder_desc_field: "Décrivez le bug et son contexte",
+    placeholder_fix_field: "1. Première étape\n2. Deuxième étape…\n(laisse vide si tu ne connais pas la solution)",
+    modal_note_pending: "⚠ Votre proposition sera envoyée à l'administrateur pour validation avant publication.",
+    btn_publier: "Publier", btn_proposer: "Proposer", btn_enregistrer: "Enregistrer", btn_proposer_modif: "Proposer la modification",
+    busy_traduction: "Traduction…", busy_envoi: "Envoi…", busy_enregistrement: "Enregistrement…",
   },
   en: {
     nav_bugs: "Bug database", nav_blog: "Blog", nav_login: "Log in", nav_admin: "Admin login",
@@ -1507,6 +1523,22 @@ const UI_TEXT = {
     placeholder_firstname: "Your first name", placeholder_comment: "A comment, a tip, did it work for you?",
     tag_pending_edit: "edit pending",
     cat_logiciel: "Software", cat_materiel: "Hardware",
+    modal_add_title: "Add a bug", modal_propose_title: "Propose a bug",
+    modal_edit_title: "Edit this bug", modal_proposeedit_title: "Propose an edit",
+    modal_addai_title: "Add a bug (AI-prefilled)",
+    label_category: "Category", label_platform: "Platform",
+    label_version_optional: "Version (optional)", label_errorcode_optional: "Error code (optional)",
+    label_title: "Title", label_severity: "Severity",
+    sev_critique: "Critical", sev_moyen: "Medium", sev_mineur: "Minor",
+    label_symptom_desc: "Symptom / description",
+    label_fix_optional: "Fix (optional — leave empty if you're just asking a question)",
+    placeholder_version: "e.g. 11, XP, Server 2019", placeholder_code: "e.g. 0x0000007B",
+    placeholder_titre: "e.g. The screen freezes at startup",
+    placeholder_desc_field: "Describe the bug and its context",
+    placeholder_fix_field: "1. First step\n2. Second step…\n(leave empty if you don't know the solution)",
+    modal_note_pending: "⚠ Your submission will be sent to the administrator for review before publishing.",
+    btn_publier: "Publish", btn_proposer: "Propose", btn_enregistrer: "Save", btn_proposer_modif: "Propose the edit",
+    busy_traduction: "Translating…", busy_envoi: "Sending…", busy_enregistrement: "Saving…",
   }
 };
 /* ---------- SEO : URL uniques par fiche + meta dynamiques ---------- */
@@ -2527,12 +2559,12 @@ document.getElementById('openAddModal').addEventListener('click', ()=>{
   addForm.dataset.editId = "";
   const note = document.getElementById('modalNote');
   if(isAdmin){
-    document.getElementById('modalTitle').textContent = "Ajouter un bug";
-    document.getElementById('modalSubmitBtn').textContent = "Publier";
+    document.getElementById('modalTitle').textContent = t('modal_add_title');
+    document.getElementById('modalSubmitBtn').textContent = t('btn_publier');
     note.style.display = "none";
   }else{
-    document.getElementById('modalTitle').textContent = "Proposer un bug";
-    document.getElementById('modalSubmitBtn').textContent = "Proposer";
+    document.getElementById('modalTitle').textContent = t('modal_propose_title');
+    document.getElementById('modalSubmitBtn').textContent = t('btn_proposer');
     note.style.display = "block";
   }
   modal.classList.add('open');
@@ -2540,23 +2572,25 @@ document.getElementById('openAddModal').addEventListener('click', ()=>{
 document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('open'));
 modal.addEventListener('click', e=>{ if(e.target === modal) modal.classList.remove('open'); });
 
-async function translateBugToEnglish(data){
+async function ensureBilingualBugData(data){
   try{
-    const prompt = `Traduis fidèlement ce contenu technique du français vers l'anglais, dans le contexte d'un site de dépannage informatique. Garde le même niveau de détail et le même format (étapes numérotées pour le correctif si présentes).
+    const prompt = `Le contenu ci-dessous peut être écrit en français OU en anglais (identifie la langue toi-même). C'est une fiche pour un site de dépannage informatique.
+
+Fournis OBLIGATOIREMENT une version française ET une version anglaise (traduis celle qui manque, garde telle quelle celle déjà dans la bonne langue). Garde le même niveau de détail et le même format (étapes numérotées pour le correctif si présentes).
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour ni balises markdown, au format exact :
-{"titre_en":"...","desc_en":"...","fix_en":"..."}
+{"titre_fr":"...","desc_fr":"...","fix_fr":"...","titre_en":"...","desc_en":"...","fix_en":"..."}
 
 Titre : ${data.titre}
 Symptôme : ${data.desc}
 Correctif : ${data.fix}`;
-    const raw = await callGemini(prompt, 800);
+    const raw = await callGemini(prompt, 900);
     const clean = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-    if(parsed && parsed.titre_en && parsed.desc_en && parsed.fix_en){
+    if(parsed && parsed.titre_fr && parsed.titre_en){
       return parsed;
     }
-  }catch(e){ /* échec silencieux : la fiche reste utilisable, le français s'affichera par défaut en mode EN */ }
+  }catch(e){ /* échec silencieux : la fiche reste utilisable telle quelle, sans traduction */ }
   return null;
 }
 
@@ -2580,14 +2614,17 @@ addForm.addEventListener('submit', async (e)=>{
   }
 
   const btn = document.getElementById('modalSubmitBtn');
-  btn.disabled = true; btn.textContent = "Traduction en anglais…";
-  const translation = await translateBugToEnglish(data);
+  btn.disabled = true; btn.textContent = t('busy_traduction');
+  const translation = await ensureBilingualBugData(data);
   if(translation){
+    data.titre = translation.titre_fr;
+    data.desc = translation.desc_fr;
+    data.fix = translation.fix_fr;
     data.titre_en = translation.titre_en;
     data.desc_en = translation.desc_en;
     data.fix_en = translation.fix_en;
   }
-  const busyLabel = editId ? "Enregistrement…" : "Envoi…";
+  const busyLabel = editId ? t('busy_enregistrement') : t('busy_envoi');
   btn.textContent = busyLabel;
   try{
     if(editId){
@@ -2626,7 +2663,7 @@ addForm.addEventListener('submit', async (e)=>{
     alert("Impossible d'enregistrer pour le moment. Réessayez.");
   }finally{
     btn.disabled = false;
-    btn.textContent = editId ? (isAdmin ? "Enregistrer" : "Proposer la modification") : (isAdmin ? "Publier" : "Proposer");
+    btn.textContent = editId ? (isAdmin ? t('btn_enregistrer') : t('btn_proposer_modif')) : (isAdmin ? t('btn_publier') : t('btn_proposer'));
   }
 });
 
@@ -2637,8 +2674,8 @@ function openAddModalFromAI(query, aiAnswer){
   addForm.desc.value = `Recherche initiale du visiteur : "${query}"`;
   addForm.fix.value = aiAnswer;
   const note = document.getElementById('modalNote');
-  document.getElementById('modalTitle').textContent = "Ajouter un bug (pré-rempli par l'IA)";
-  document.getElementById('modalSubmitBtn').textContent = "Publier";
+  document.getElementById('modalTitle').textContent = t('modal_addai_title');
+  document.getElementById('modalSubmitBtn').textContent = t('btn_publier');
   note.style.display = "none";
   modal.classList.add('open');
 }
@@ -2656,12 +2693,12 @@ function openEditModal(b){
   addForm.fix.value = b.fix;
   const note = document.getElementById('modalNote');
   if(isAdmin){
-    document.getElementById('modalTitle').textContent = "Modifier ce bug";
-    document.getElementById('modalSubmitBtn').textContent = "Enregistrer";
+    document.getElementById('modalTitle').textContent = t('modal_edit_title');
+    document.getElementById('modalSubmitBtn').textContent = t('btn_enregistrer');
     note.style.display = "none";
   }else{
-    document.getElementById('modalTitle').textContent = "Proposer une modification";
-    document.getElementById('modalSubmitBtn').textContent = "Proposer la modification";
+    document.getElementById('modalTitle').textContent = t('modal_proposeedit_title');
+    document.getElementById('modalSubmitBtn').textContent = t('btn_proposer_modif');
     note.style.display = "block";
   }
   modal.classList.add('open');
