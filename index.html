@@ -307,6 +307,7 @@ main{max-width:900px;margin:0 auto;padding:36px 24px 80px;}
 }
 .comments-form input:focus, .comments-form textarea:focus{border-color:var(--accent-dim);}
 .comments-form textarea{min-height:60px;}
+.hp-field{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
 .comments-form button{
   align-self:flex-end;font-family:var(--font-mono);font-size:12.5px;font-weight:600;
   background:var(--accent);color:#04201d;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;
@@ -1320,8 +1321,8 @@ footer{
         <textarea name="desc" placeholder="Décrivez le bug et son contexte" required></textarea>
       </div>
       <div class="field">
-        <label>Correctif</label>
-        <textarea name="fix" placeholder="1. Première étape&#10;2. Deuxième étape…" required></textarea>
+        <label>Correctif (optionnel — laisse vide si tu poses juste une question)</label>
+        <textarea name="fix" placeholder="1. Première étape&#10;2. Deuxième étape…&#10;(laisse vide si tu ne connais pas la solution)"></textarea>
       </div>
       <div class="modal-note" id="modalNote" style="display:none;">⚠ Votre proposition sera envoyée à l'administrateur pour validation avant publication.</div>
       <div class="modal-actions">
@@ -1392,6 +1393,7 @@ footer{
         <label>Message</label>
         <textarea name="message" maxlength="800" required></textarea>
       </div>
+      <input type="text" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="modal-actions">
         <button type="submit" id="contactSubmitBtn">Envoyer</button>
       </div>
@@ -2044,6 +2046,7 @@ function render(){
               <div class="comments-form-label">✏️ ${t('label_write_comment')}</div>
               <input type="text" class="c-name" placeholder="${t('placeholder_firstname')}" maxlength="40" required>
               <textarea class="c-text" placeholder="${t('placeholder_comment')}" maxlength="500" required></textarea>
+              <input type="text" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
               <button type="submit">Publier</button>
             </form>
           </div>
@@ -2413,6 +2416,8 @@ async function initComments(key, container, bugContext){
   // pour qu'un clic rapide sur "Publier" ne déclenche jamais l'envoi natif du formulaire.
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
+    const hp = form.querySelector('.hp-field');
+    if(hp && hp.value){ return; } // piège à bots : champ rempli = robot, on ignore silencieusement
     const nameInput = form.querySelector('.c-name');
     const textInput = form.querySelector('.c-text');
     const name = nameInput.value.trim();
@@ -2535,6 +2540,28 @@ document.getElementById('openAddModal').addEventListener('click', ()=>{
 document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('open'));
 modal.addEventListener('click', e=>{ if(e.target === modal) modal.classList.remove('open'); });
 
+async function ensureBilingualBugData(data){
+  try{
+    const prompt = `Le contenu ci-dessous peut être écrit en français OU en anglais (identifie la langue toi-même). C'est une fiche pour un site de dépannage informatique.
+
+Fournis OBLIGATOIREMENT une version française ET une version anglaise (traduis celle qui manque, garde telle quelle celle déjà dans la bonne langue). Garde le même niveau de détail et le même format (étapes numérotées pour le correctif si présentes).
+
+Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour ni balises markdown, au format exact :
+{"titre_fr":"...","desc_fr":"...","fix_fr":"...","titre_en":"...","desc_en":"...","fix_en":"..."}
+
+Titre : ${data.titre}
+Symptôme : ${data.desc}
+Correctif : ${data.fix}`;
+    const raw = await callGemini(prompt, 900);
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if(parsed && parsed.titre_fr && parsed.titre_en){
+      return parsed;
+    }
+  }catch(e){ /* échec silencieux : la fiche reste utilisable telle quelle, sans traduction */ }
+  return null;
+}
+
 addForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const editId = addForm.dataset.editId;
@@ -2546,17 +2573,27 @@ addForm.addEventListener('submit', async (e)=>{
     titre: addForm.titre.value.trim(),
     gravite: addForm.gravite.value,
     desc: addForm.desc.value.trim(),
-    fix: addForm.fix.value.trim()
+    fix: addForm.fix.value.trim() || "Pas encore de solution connue — si tu en trouves une, reviens la partager en commentaire !"
   };
-  if(!data.titre || !data.desc || !data.fix) return;
+  if(!data.titre || !data.desc) return;
   if(!canSubmit('addbug:'+(editId||'new'), 5000)){
     alert("Merci de patienter quelques secondes avant de renvoyer.");
     return;
   }
 
   const btn = document.getElementById('modalSubmitBtn');
+  btn.disabled = true; btn.textContent = "Traduction…";
+  const translation = await ensureBilingualBugData(data);
+  if(translation){
+    data.titre = translation.titre_fr;
+    data.desc = translation.desc_fr;
+    data.fix = translation.fix_fr;
+    data.titre_en = translation.titre_en;
+    data.desc_en = translation.desc_en;
+    data.fix_en = translation.fix_en;
+  }
   const busyLabel = editId ? "Enregistrement…" : "Envoi…";
-  btn.disabled = true; btn.textContent = busyLabel;
+  btn.textContent = busyLabel;
   try{
     if(editId){
       if(isAdmin){
@@ -3179,6 +3216,7 @@ contactModal.addEventListener('click', e=>{ if(e.target === contactModal) contac
 
 contactForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  if(contactForm.website && contactForm.website.value){ return; } // piège à bots
   const data = {
     name: contactForm.name.value.trim(),
     contact: contactForm.contact.value.trim(),
