@@ -1137,6 +1137,7 @@ async function initComments(key, articleContext){
       updateBadgeFromKey(key, current.length);
       btn.disabled = false; btn.textContent = 'Publier';
       addToHistory(name, {type:'article', ref: key.replace('article:',''), titre: articleContext ? articleContext.titre : '', text, date: nowIso});
+      logActivity({ kind:'comment', source:'article', name, text, context: articleContext ? articleContext.titre : key, threadKey: key, date: nowIso });
       notifyAdminOfComment(articleContext ? articleContext.titre : key, name, text);
 
       if(articleContext){
@@ -1203,6 +1204,16 @@ document.getElementById('backBtn').addEventListener('click', ()=>{
 
 /* ---------- CONTACT FORM ---------- */
 const CONTACT_KEY = "contact-messages";
+const ACTIVITY_LOG_KEY = "activity-log";
+async function logActivity(entry){
+  try{
+    const res = await window.storage.get(ACTIVITY_LOG_KEY, true).catch(()=>null);
+    let log = (res && res.value) ? JSON.parse(res.value) : [];
+    log.push({ ...entry, date: entry.date || new Date().toISOString() });
+    if(log.length > 500) log = log.slice(log.length - 500);
+    await window.storage.set(ACTIVITY_LOG_KEY, JSON.stringify(log), true);
+  }catch(e){ /* non-bloquant */ }
+}
 let currentUser = null;
 let isAdmin = false;
 const ADMIN_PASSWORD_HASH = "34b2dcedf70a796339a26884ec866cdc3a771e9b21580f8d96a3dbeae0d9c2af";
@@ -1318,6 +1329,7 @@ contactForm.addEventListener('submit', async (e)=>{
     const msgs = (res && res.value) ? JSON.parse(res.value) : [];
     msgs.push(data);
     await window.storage.set(CONTACT_KEY, JSON.stringify(msgs), true);
+    logActivity({ kind:'contact', source:'contact', name: data.name, text: data.message, context: 'Formulaire de contact (blog)', date: data.date });
     contactModal.classList.remove('open');
     alert("Merci ! Votre message a bien été envoyé.");
   }catch(err){

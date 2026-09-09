@@ -1737,9 +1737,24 @@ const PENDING_COMMENTS_KEY = "pending-comments";
 const CONTACT_KEY = "contact-messages";
 const MOD_HISTORY_KEY = "moderation-history";
 const ARCHIVED_MSG_KEY = "archived-messages";
+const ACTIVITY_LOG_KEY = "activity-log";
 let modHistory = [];
 let archivedMessages = [];
+let activityLog = [];
 let currentUser = null; // {username, displayName}
+
+/* Journal d'activité unifié (commentaires + messages de contact), tous confondus,
+   consultable depuis le panneau Messages sans dépendre des emails (quota EmailJS limité). */
+async function logActivity(entry){
+  try{
+    const res = await window.storage.get(ACTIVITY_LOG_KEY, true).catch(()=>null);
+    let log = (res && res.value) ? JSON.parse(res.value) : [];
+    log.push({ ...entry, date: entry.date || new Date().toISOString() });
+    if(log.length > 500) log = log.slice(log.length - 500); // garde les 500 plus récents
+    await window.storage.set(ACTIVITY_LOG_KEY, JSON.stringify(log), true);
+    activityLog = log;
+  }catch(e){ /* non-bloquant : le journal ne doit jamais empêcher une action normale */ }
+}
 
 /* ---------- MODÉRATION DES COMMENTAIRES ----------
    1er filtre : liste de mots explicitement interdits (rapide, gratuit, bloque sans appel API).
@@ -2008,6 +2023,17 @@ function sevRank(s){return {critique:0,moyen:1,mineur:2}[s] ?? 3;}
 const PAGE_SIZE = 10;
 let visibleCount = PAGE_SIZE;
 
+let searchTrackTimer = null;
+function trackNoResultsSearch(query){
+  if(!query || !query.trim()) return;
+  clearTimeout(searchTrackTimer);
+  searchTrackTimer = setTimeout(()=>{
+    if(window.gtag){
+      window.gtag('event', 'search_no_results', { search_term: query.trim() });
+    }
+  }, 1200); // attend une pause dans la frappe pour éviter un événement par lettre tapée
+}
+
 function render(){
   const q = state.q.trim().toLowerCase();
   let list = getAllBugs().filter(b=>{
@@ -2039,6 +2065,7 @@ function render(){
     document.getElementById('aiEmptyAnswer').innerHTML = '';
     aiChatHistory = [];
     aiChatQuery = '';
+    trackNoResultsSearch(state.q);
     const askBtn = document.getElementById('askAiEmptyBtn');
     askBtn.disabled = false;
     askBtn.textContent = "🤖 Demander à l'IA";
@@ -2361,6 +2388,9 @@ async function askAIForQuery(query){
   answerEl.innerHTML = '';
   aiChatHistory = [];
   aiChatQuery = query;
+  if(window.gtag){
+    window.gtag('event', 'ai_question_asked', { search_term: query.trim() });
+  }
   try{
     const prompt = `Tu es l'assistant technique du site BugLog, qui aide à diagnostiquer des pannes informatiques (Windows, macOS, Linux, matériel).
 Un visiteur cherche une solution à ceci, qui n'existe pas encore dans notre base de bugs : "${query}"
@@ -2506,6 +2536,7 @@ async function initComments(key, container, bugContext){
       updateBadgeFromKey(key, current.length);
       btn.disabled = false; btn.textContent = 'Publier';
       addToHistory(name, {type:'bug', ref: key.replace('bug:',''), titre: bugContext ? bugContext.titre : '', text, date: nowIso});
+      logActivity({ kind:'comment', source:'bug', name, text, context: bugContext ? bugContext.titre : key, threadKey: key, date: nowIso });
       if(!isAdmin){
         notifyAdminOfComment(bugContext ? bugContext.titre : key, name, text);
       }
@@ -3267,6 +3298,7 @@ contactForm.addEventListener('submit', async (e)=>{
     contactMessages = (res && res.value) ? JSON.parse(res.value) : contactMessages;
     contactMessages.push(data);
     await window.storage.set(CONTACT_KEY, JSON.stringify(contactMessages), true);
+    logActivity({ kind:'contact', source:'contact', name: data.name, text: data.message, context: 'Formulaire de contact', date: data.date });
     contactModal.classList.remove('open');
     updateModBtn();
     alert("Merci ! Votre message a bien été envoyé.");
@@ -3319,7 +3351,11 @@ document.getElementById('historySearchForm').addEventListener('submit', async (e
 
 /* ---------- ADMIN MESSAGES PANEL ---------- */
 const msgModal = document.getElementById('msgModal');
-document.getElementById('msgBtn').addEventListener('click', ()=>{
+document.getElementById('msgBtn').addEventListener('click', async ()=>{
+  try{
+    const res = await window.storage.get(ACTIVITY_LOG_KEY, true);
+    activityLog = (res && res.value) ? JSON.parse(res.value) : [];
+  }catch(e){ activityLog = []; }
   renderMsgPanel();
   msgModal.classList.add('open');
 });
@@ -3343,7 +3379,48 @@ function renderMsgPanel(){
     <div class="account-tabs">
       <button type="button" class="account-tab${msgPanelTab==='inbox'?' active':''}" data-msgtab="inbox">Boîte de réception (${contactMessages.length})</button>
       <button type="button" class="account-tab${msgPanelTab==='archive'?' active':''}" data-msgtab="archive">Archivés (${archivedMessages.length})</button>
+      <button type="button" class="account-tab${msgPanelTab==='history'?' active':''}" data-msgtab="history">Historique complet (${activityLog.length})</button>
     </div>`;
+
+  if(msgPanelTab === 'history'){
+    if(activityLog.length === 0){
+      html += '<div class="mod-empty">Aucune activité enregistrée pour l’instant.</div>';
+    }else{
+      const sortedLog = [...activityLog].sort((a,b)=> new Date(b.date) - new Date(a.date));
+      html += sortedLog.map(entry => {
+        const originalIdx = activityLog.indexOf(entry);
+        return `
+        <div class="mod-item">
+          <h5>${entry.kind === 'comment' ? '💬' : '✉️'} ${escapeHtml(entry.name)} <span class="admin-badge" style="color:var(--text-dim);border-color:var(--line);">${entry.kind === 'comment' ? 'Commentaire' : 'Contact'}</span></h5>
+          <div class="mod-meta">${escapeHtml(entry.context)} · ${fmtShort(entry.date)}</div>
+          <p>${escapeHtml(entry.text)}</p>
+          <div class="mod-actions">
+            <button class="mod-reject" data-delete-activity-index="${originalIdx}">Supprimer</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('button[data-msgtab]').forEach(tab=>{
+      tab.addEventListener('click', ()=>{ msgPanelTab = tab.dataset.msgtab; renderMsgPanel(); });
+    });
+    el.querySelectorAll('button[data-delete-activity-index]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm("Supprimer définitivement cette entrée de l'historique ?")) return;
+        const idx = parseInt(btn.dataset.deleteActivityIndex, 10);
+        btn.disabled = true;
+        try{
+          activityLog.splice(idx, 1);
+          await window.storage.set(ACTIVITY_LOG_KEY, JSON.stringify(activityLog), true);
+          renderMsgPanel();
+        }catch(err){
+          alert("Impossible de supprimer pour le moment.");
+          btn.disabled = false;
+        }
+      });
+    });
+    return;
+  }
 
   const list = msgPanelTab === 'inbox' ? contactMessages : archivedMessages;
   if(list.length === 0){
